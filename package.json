@@ -37,10 +37,11 @@
 		"url": "git+https://github.com/oscarpalmer/timer.git"
 	},
 	"scripts": {
-    "build": "esbuild ./src/index.ts --bundle --target=es2020 --platform=browser --outfile=./dist/timer.js --format=esm",
+		"build": "esbuild ./src/index.ts --bundle --target=es2020 --platform=browser --outfile=./dist/timer.js --format=esm",
 		"watch": "esbuild ./src/index.ts --bundle --target=es2020 --platform=browser --outfile=./dist/timer.js --format=esm --watch"
 	},
 	"type": "module",
+	"types": "src/index.d.ts",
 	"unpkg": "dist/timer.js",
-	"version": "0.4.0"
+	"version": "0.5.0"
 }
