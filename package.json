@@ -40,6 +40,7 @@
     "build": "esbuild ./src/index.ts --bundle --target=es2020 --platform=browser --outfile=./dist/timer.js --format=esm",
 		"watch": "esbuild ./src/index.ts --bundle --target=es2020 --platform=browser --outfile=./dist/timer.js --format=esm --watch"
 	},
+	"type": "module",
 	"unpkg": "dist/timer.js",
-	"version": "0.3.0"
+	"version": "0.4.0"
 }

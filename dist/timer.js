@@ -7,51 +7,74 @@ var __publicField = (obj, key, value) => {
 };
 
 // src/index.ts
+var milliseconds = 1e3 / 60;
 var Timed = class {
-  constructor(callback, time, count) {
+  constructor(type, callback, time, count) {
+    __publicField(this, "callback");
+    __publicField(this, "count");
+    __publicField(this, "frame");
+    __publicField(this, "running", false);
+    __publicField(this, "time");
+    __publicField(this, "type");
+    if (typeof callback !== "function") {
+      throw new Error(`A ${type} timer must have a callback function`);
+    }
+    if (typeof time !== "number" || time < 0) {
+      throw new Error(`A ${type} timer must have a non-negative number as its time`);
+    }
+    if (type === "repeated" && (typeof count !== "number" || count < 2)) {
+      throw new Error(`A ${type} timer must have a number above 1 as its repeat count`);
+    }
+    this.type = type;
     this.callback = callback;
     this.time = time;
     this.count = count;
-    __publicField(this, "frame");
-    __publicField(this, "stopped", false);
-    Timed.run(this);
+  }
+  get active() {
+    return this.running;
   }
   restart() {
     this.stop();
-    this.stopped = false;
     Timed.run(this);
+    return this;
   }
   start() {
-    if (this.stopped) {
-      Timed.run(this);
+    if (this.running) {
+      return this;
     }
+    Timed.run(this);
+    return this;
   }
   stop() {
-    this.stopped = true;
+    this.running = false;
     if (typeof this.frame === "undefined") {
-      return;
+      return this;
     }
     window.cancelAnimationFrame(this.frame);
     this.frame = void 0;
+    return this;
   }
   static run(timed) {
-    const repeated = timed.count > 1;
+    timed.running = true;
     let count = 0;
     let start;
     function step(timestamp) {
-      if (timed.stopped) {
+      if (!timed.running) {
         return;
       }
       start ?? (start = timestamp);
       const elapsed = timestamp - start;
-      if (elapsed >= timed.time) {
-        if (!timed.stopped) {
-          timed.callback(repeated ? count : void 0);
+      const elapsedMinimum = elapsed - milliseconds;
+      const elapsedMaximum = elapsed + milliseconds;
+      if (elapsedMinimum < timed.time && timed.time < elapsedMaximum) {
+        if (timed.running) {
+          timed.callback(timed.type === "repeated" ? count : void 0);
         }
         count += 1;
-        if (timed.count > 1 && count < timed.count) {
+        if (timed.type === "repeated" && count < timed.count) {
           start = void 0;
         } else {
+          timed.stop();
           return;
         }
       }
@@ -61,15 +84,21 @@ var Timed = class {
   }
 };
 var Repeated = class extends Timed {
+  constructor(callback, time, count) {
+    super("repeated", callback, time, count);
+  }
 };
 var Waited = class extends Timed {
-};
-var Timer = class {
-  static repeat(callback, time, count) {
-    return new Repeated(callback, time, count);
+  constructor(callback, time) {
+    super("waited", callback, time, 1);
   }
-  static wait(callback, time) {
-    return new Waited(callback, time, 1);
+};
+var Timer = {
+  repeat: (callback, time, count) => {
+    return new Repeated(callback, time, count).start();
+  },
+  wait: (callback, time) => {
+    return new Waited(callback, time).start();
   }
 };
 export {

@@ -1,53 +1,81 @@
 type RepeatedCallback = (index: number) => void;
+type TimerType = 'repeated' | 'waited';
 type WaitedCallback = () => void;
 
-abstract class Timed<Callback> {
-	private frame: number | undefined;
-	private stopped = false;
+const milliseconds = 1000 / 60;
 
-	constructor(
-		private readonly callback: Callback,
-		private readonly time: number,
-		private readonly count: number,
-	) {
-		Timed.run(this);
+abstract class Timed<Callback> {
+	private readonly callback: Callback;
+	private readonly count: number;
+	private frame: number | undefined;
+	private running = false;
+	private readonly time: number;
+	private readonly type: TimerType;
+
+	get active(): boolean {
+		return this.running;
 	}
 
-	restart(): void {
+	protected constructor(type: TimerType, callback: Callback, time: number,	count: number) {
+		if (typeof callback !== 'function') {
+			throw new Error(`A ${type} timer must have a callback function`);
+		}
+
+		if (typeof time !== 'number' || time < 0) {
+			throw new Error(`A ${type} timer must have a non-negative number as its time`);
+		}
+
+		if (type === 'repeated' && (typeof count !== 'number' || count < 2)) {
+			throw new Error(`A ${type} timer must have a number above 1 as its repeat count`);
+		}
+
+		this.type = type;
+		this.callback = callback;
+		this.time = time;
+		this.count = count;
+	}
+
+	restart(): Timed<Callback> {
 		this.stop();
 
-		this.stopped = false;
+		Timed.run(this as never);
 
-		Timed.run(this);
+		return this;
 	}
 
-	start(): void {
-		if (this.stopped) {
-			Timed.run(this);
+	start(): Timed<Callback> {
+		if (this.running) {
+			return this;
 		}
+
+		Timed.run(this as never);
+
+		return this;
 	}
 
-	stop(): void {
-		this.stopped = true;
+	stop(): Timed<Callback> {
+		this.running = false;
 
 		if (typeof this.frame === 'undefined') {
-			return;
+			return this;
 		}
 
 		window.cancelAnimationFrame(this.frame);
 
 		this.frame = undefined;
+
+		return this;
 	}
 
 	private static run(timed: Timed<(index: number | undefined) => void>): void {
-		const repeated = timed.count > 1;
+		timed.running = true;
 
 		let count = 0;
 
 		let start: DOMHighResTimeStamp | undefined;
 
 		function step(timestamp: DOMHighResTimeStamp): void {
-			if (timed.stopped) {
+			if (!timed.running) {
 				return;
 			}
 
@@ -55,16 +83,21 @@ abstract class Timed<Callback> {
 
 			const elapsed = timestamp - start;
 
-			if (elapsed >= timed.time) {
-				if (!timed.stopped) {
-					timed.callback(repeated ? count : undefined);
+			const elapsedMinimum = elapsed - milliseconds;
+			const elapsedMaximum = elapsed + milliseconds;
+
+			if (elapsedMinimum < timed.time && timed.time < elapsedMaximum) {
+				if (timed.running) {
+					timed.callback(timed.type === 'repeated' ? count : undefined);
 				}
 
 				count += 1;
 
-				if (timed.count > 1 && count < timed.count) {
+				if (timed.type === 'repeated' && count < timed.count) {
 					start = undefined;
 				} else {
+					timed.stop();
+
 					return;
 				}
 			}
@@ -76,16 +109,24 @@ abstract class Timed<Callback> {
 	}
 }
 
-export class Repeated extends Timed<RepeatedCallback> {}
-export class Waited extends Timed<WaitedCallback> {}
-
-// eslint-disable-next-line @typescript-eslint/no-extraneous-class
-export class Timer {
-	static repeat(callback: RepeatedCallback, time: number, count: number): Repeated {
-		return new Repeated(callback, time, count);
+export class Repeated extends Timed<RepeatedCallback> {
+	constructor(callback: RepeatedCallback, time: number, count: number) {
+		super('repeated', callback, time, count);
 	}
+}
 
-	static wait(callback: WaitedCallback, time: number): Waited {
-		return new Waited(callback, time, 1);
+export class Waited extends Timed<WaitedCallback> {
+	constructor(callback: WaitedCallback, time: number) {
+		super('waited', callback, time, 1);
 	}
+}
+
+export const Timer = {
+	repeat: (callback: RepeatedCallback, time: number, count: number): Repeated => {
+		return (new Repeated(callback, time, count)).start();
+	},
+
+	wait: (callback: WaitedCallback, time: number): Waited => {
+		return (new Waited(callback, time)).start();
+	},
 }
