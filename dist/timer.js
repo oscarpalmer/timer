@@ -93,16 +93,15 @@ var Waited = class extends Timed {
     super("waited", callback, time, 1);
   }
 };
-var Timer = {
-  repeat: (callback, time, count) => {
-    return new Repeated(callback, time, count).start();
-  },
-  wait: (callback, time) => {
-    return new Waited(callback, time).start();
-  }
-};
+function repeat(callback, time, count) {
+  return new Repeated(callback, time, count).start();
+}
+function wait(callback, time) {
+  return new Waited(callback, time).start();
+}
 export {
   Repeated,
-  Timer,
-  Waited
+  Waited,
+  repeat,
+  wait
 };

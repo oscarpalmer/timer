@@ -4,4 +4,4 @@ A better timer?
 
 ## License
 
-[MI licensed](LICENSE), natch :blush:
+[MIT licensed](LICENSE), natch :blush:

@@ -1,12 +1,12 @@
-import {Repeated, Timer, Waited} from '../dist/timer.js';
+import {repeat, wait, Repeated, Waited} from '../dist/timer.js';
 
-describe('Timer, factory', function () {
+describe('Functions', function () {
   it('should create and start a repeated timer', function () {
-		chai.assert.ok(Timer.repeat(() => {}, 0, 2) instanceof Repeated);
+		chai.assert.ok(repeat(() => {}, 0, 2) instanceof Repeated);
 	});
 
 	it('should create and start a waited timer', function () {
-		chai.assert.ok(Timer.wait(() => {}, 0) instanceof Waited);
+		chai.assert.ok(wait(() => {}, 0) instanceof Waited);
 	});
 });
 
@@ -28,11 +28,11 @@ describe('Timer, Repeated', function () {
 		it('should run as many times as set', function (done) {
 			let value = 0;
 
-			Timer.repeat(() => {
+			repeat(() => {
 				value += 1;
 			}, 25, 10);
 
-			Timer.wait(() => {
+			wait(() => {
 				chai.assert.equal(value, 10);
 
 				done();
@@ -42,15 +42,15 @@ describe('Timer, Repeated', function () {
 		it('should run until canceled', function (done) {
 			let value = 0;
 
-			const repeated = Timer.repeat(() => {
+			const repeated = repeat(() => {
 				value += 1;
 			}, 25, 10);
 
-			Timer.wait(() => {
+			wait(() => {
 				repeated.stop();
 			}, 125);
 
-			Timer.wait(() => {
+			wait(() => {
 				chai.assert.ok(value < 10);
 
 				done();
@@ -87,11 +87,11 @@ describe('Timer, Repeated & Waited', function () {
 				value = 1234;
 			}, 125);
 	
-			Timer.wait(() => {
+			wait(() => {
 				waited.stop();
 			}, 250);
 	
-			Timer.wait(() => {
+			wait(() => {
 				chai.assert.equal(value, 0);
 	
 				done();
@@ -107,11 +107,11 @@ describe('Timer, Repeated & Waited', function () {
 	
 			waited.start();
 	
-			Timer.wait(() => {
+			wait(() => {
 				waited.restart();
 			}, 250);
 	
-			Timer.wait(() => {
+			wait(() => {
 				chai.assert.equal(value, 2);
 	
 				done();

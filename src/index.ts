@@ -12,6 +12,9 @@ abstract class Timed<Callback> {
 	private readonly time: number;
 	private readonly type: TimerType;
 
+	/**
+	 * Is the timer active?
+	 */
 	get active(): boolean {
 		return this.running;
 	}
@@ -35,7 +38,10 @@ abstract class Timed<Callback> {
 		this.count = count;
 	}
 
-	restart(): Timed<Callback> {
+	/**
+	 * Restart timer
+	 */
+	restart(): this {
 		this.stop();
 
 		Timed.run(this as never);
@@ -43,7 +49,10 @@ abstract class Timed<Callback> {
 		return this;
 	}
 
-	start(): Timed<Callback> {
+	/**
+	 * Start timer
+	 */
+	start(): this {
 		if (this.running) {
 			return this;
 		}
@@ -53,7 +62,10 @@ abstract class Timed<Callback> {
 		return this;
 	}
 
-	stop(): Timed<Callback> {
+	/**
+	 * Stop timer
+	 */
+	stop(): this {
 		this.running = false;
 
 		if (typeof this.frame === 'undefined') {
@@ -109,24 +121,34 @@ abstract class Timed<Callback> {
 	}
 }
 
+/**
+ * A repeated timer
+ */
 export class Repeated extends Timed<RepeatedCallback> {
 	constructor(callback: RepeatedCallback, time: number, count: number) {
 		super('repeated', callback, time, count);
 	}
 }
 
+/**
+ * A waited timer
+ */
 export class Waited extends Timed<WaitedCallback> {
 	constructor(callback: WaitedCallback, time: number) {
 		super('waited', callback, time, 1);
 	}
 }
 
-export const Timer = {
-	repeat: (callback: RepeatedCallback, time: number, count: number): Repeated => {
-		return (new Repeated(callback, time, count)).start();
-	},
+/**
+ * Create and start a new repeated timer
+ */
+export function repeat(callback: RepeatedCallback, time: number, count: number): Repeated {
+	return (new Repeated(callback, time, count)).start();
+}
 
-	wait: (callback: WaitedCallback, time: number): Waited => {
-		return (new Waited(callback, time)).start();
-	},
+/**
+ * Create and start a new waited timer
+ */
+export function wait(callback: WaitedCallback, time: number): Waited {
+	return (new Waited(callback, time)).start();
 }
