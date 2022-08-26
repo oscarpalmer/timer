@@ -1,4 +1,3 @@
-"use strict";
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __publicField = (obj, key, value) => {
@@ -7,7 +6,7 @@ var __publicField = (obj, key, value) => {
 };
 
 // src/index.ts
-var milliseconds = 1e3 / 60;
+var milliseconds = Math.round(1e3 / 60);
 var Timed = class {
   constructor(type, callback, time, count) {
     __publicField(this, "callback");

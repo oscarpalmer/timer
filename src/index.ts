@@ -2,7 +2,7 @@ type RepeatedCallback = (index: number) => void;
 type TimerType = 'repeated' | 'waited';
 type WaitedCallback = () => void;
 
-const milliseconds = 1000 / 60;
+const milliseconds = Math.round(1000 / 60);
 
 abstract class Timed<Callback> {
 	private readonly callback: Callback;
