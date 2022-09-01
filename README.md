@@ -10,11 +10,11 @@ Timer is available on _npm_ as [`@oscarpalmer/timer`](https://www.npmjs.com/pack
 
 ## Getting started
 
-This is fairily lightweight package, so hopefully you'll be up and running in seconds :blush:
+This is fairly lightweight package, so hopefully you'll be up and running in seconds :blush:
 
 ### Examples
 
-The timers can be called with nice helper methods, which also auto-start the timers:
+The timers can be called with nice helper methods, which also auto-starts the timers:
 
 ```typescript
 import {repeat, wait} from '@oscarpalmer/timer';
@@ -31,6 +31,8 @@ import {Repeated, Waited} from '@oscarpalmer/timer';
 waited = new Waited(callback, time);
 repeated = new Repeated(callback, time, count);
 ```
+
+## Methods
 
 Both the nice helper methods and the class syntax create similar objects – `Waited` and `Repeated` – which share methods:
 
