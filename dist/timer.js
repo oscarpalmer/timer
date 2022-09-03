@@ -1,36 +1,57 @@
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
-
 // src/index.ts
 var milliseconds = Math.round(1e3 / 60);
 var Timed = class {
-  constructor(type, callback, time, count) {
-    __publicField(this, "callback");
-    __publicField(this, "count");
-    __publicField(this, "frame");
-    __publicField(this, "running", false);
-    __publicField(this, "time");
-    __publicField(this, "type");
+  callback;
+  count;
+  frame;
+  running = false;
+  time;
+  get active() {
+    return this.running;
+  }
+  constructor(callback, time, count) {
+    const isRepeated = this instanceof Repeated;
+    const type = isRepeated ? "repeated" : "waited";
     if (typeof callback !== "function") {
       throw new Error(`A ${type} timer must have a callback function`);
     }
     if (typeof time !== "number" || time < 0) {
       throw new Error(`A ${type} timer must have a non-negative number as its time`);
     }
-    if (type === "repeated" && (typeof count !== "number" || count < 2)) {
-      throw new Error(`A ${type} timer must have a number above 1 as its repeat count`);
+    if (isRepeated && (typeof count !== "number" || count < 2)) {
+      throw new Error("A repeated timer must have a number above 1 as its repeat count");
     }
-    this.type = type;
     this.callback = callback;
-    this.time = time;
     this.count = count;
+    this.time = time;
   }
-  get active() {
-    return this.running;
+  static run(timed) {
+    timed.running = true;
+    let count = 0;
+    let start;
+    function step(timestamp) {
+      if (!timed.running) {
+        return;
+      }
+      start ??= timestamp;
+      const elapsed = timestamp - start;
+      const elapsedMinimum = elapsed - milliseconds;
+      const elapsedMaximum = elapsed + milliseconds;
+      if (elapsedMinimum < timed.time && timed.time < elapsedMaximum) {
+        if (timed.running) {
+          timed.callback(timed instanceof Repeated ? count : void 0);
+        }
+        count += 1;
+        if (timed instanceof Repeated && count < timed.count) {
+          start = void 0;
+        } else {
+          timed.stop();
+          return;
+        }
+      }
+      timed.frame = window.requestAnimationFrame(step);
+    }
+    timed.frame = window.requestAnimationFrame(step);
   }
   restart() {
     this.stop();
@@ -53,43 +74,12 @@ var Timed = class {
     this.frame = void 0;
     return this;
   }
-  static run(timed) {
-    timed.running = true;
-    let count = 0;
-    let start;
-    function step(timestamp) {
-      if (!timed.running) {
-        return;
-      }
-      start ?? (start = timestamp);
-      const elapsed = timestamp - start;
-      const elapsedMinimum = elapsed - milliseconds;
-      const elapsedMaximum = elapsed + milliseconds;
-      if (elapsedMinimum < timed.time && timed.time < elapsedMaximum) {
-        if (timed.running) {
-          timed.callback(timed.type === "repeated" ? count : void 0);
-        }
-        count += 1;
-        if (timed.type === "repeated" && count < timed.count) {
-          start = void 0;
-        } else {
-          timed.stop();
-          return;
-        }
-      }
-      timed.frame = window.requestAnimationFrame(step);
-    }
-    timed.frame = window.requestAnimationFrame(step);
-  }
 };
 var Repeated = class extends Timed {
-  constructor(callback, time, count) {
-    super("repeated", callback, time, count);
-  }
 };
 var Waited = class extends Timed {
   constructor(callback, time) {
-    super("waited", callback, time, 1);
+    super(callback, time, 1);
   }
 };
 function repeat(callback, time, count) {
@@ -104,3 +94,4 @@ export {
   repeat,
   wait
 };
+//# sourceMappingURL=timer.js.map

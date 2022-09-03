@@ -31,12 +31,12 @@
 
 					"private-constructor", "protected-constructor", "public-constructor", "constructor",
 
+					"static-method", "public-static-method", "protected-static-method", "private-static-method",
+
 					["public-abstract-method", "public-decorated-method", "public-instance-method", "public-method"],
 					["protected-abstract-method", "protected-decorated-method", "protected-instance-method", "protected-method"],
 					["private-abstract-method", "private-decorated-method", "private-instance-method", "private-method"],
-					["abstract-method", "decorated-method", "instance-method", "method"],
-
-					"static-method", "public-static-method", "protected-static-method", "private-static-method"
+					["abstract-method", "decorated-method", "instance-method", "method"]
 				]
 			}
 		]

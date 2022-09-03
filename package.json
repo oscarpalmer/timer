@@ -19,15 +19,15 @@
 	"exports": {
 		".": {
 			"types": "./src/index.d.ts",
-			"script": "./dist/timer.iife.js",
-			"module": "./dist/timer.js",
-			"import": "./dist/timer.js",
-			"require": "./dist/timer.cjs.js",
-			"default": "./dist/timer.js"
-		}
+      "browser": "./dist/timer.iife.js",
+      "module": "./dist/timer.js",
+      "import": "./dist/timer.js",
+      "require": "./dist/timer.cjs"
+		},
+		"./package.json": "./package.json"
 	},
-	"files": ["dist", "src/index.d.ts"],
-	"jsdelivr": "dist/timer.js",
+	"files": ["dist", "src"],
+	"jsdelivr": "dist/timer.iife.js",
 	"keywords": [
 		"timer",
 		"setTimeout",
@@ -35,7 +35,7 @@
 		"requestAnimationFrame"
 	],
 	"license": "MIT",
-	"main": "dist/timer.cjs.js",
+	"main": "dist/timer.cjs",
 	"module": "dist/timer.js",
 	"name": "@oscarpalmer/timer",
 	"repository": {
@@ -44,13 +44,13 @@
 	},
 	"scripts": {
 		"build": "npm run build:cjs; npm run build:esm; npm run build:iife",
-		"build:cjs": "esbuild ./src/index.ts --bundle --target=es2020 --platform=browser --outfile=./dist/timer.cjs.js --format=cjs",
-		"build:esm": "esbuild ./src/index.ts --bundle --target=es2020 --platform=browser --outfile=./dist/timer.js --format=esm",
-		"build:iife": "esbuild ./src/index.ts --bundle --target=es2020 --platform=browser --outfile=./dist/timer.iife.js --format=iife --global-name=Timer",
-		"watch": "esbuild ./src/index.ts --bundle --target=es2020 --platform=browser --outfile=./dist/timer.js --format=esm --watch"
+		"build:cjs": "esbuild ./src/index.ts --bundle --minify --sourcemap --format=cjs --outfile=./dist/timer.cjs --target=es2017",
+		"build:esm": "esbuild ./src/index.ts --bundle --sourcemap --format=esm --outfile=./dist/timer.js --target=esnext",
+		"build:iife": "esbuild ./src/index.ts --bundle --minify --sourcemap --format=iife --global-name=Timer --outfile=./dist/timer.iife.js --target=es2017",
+		"watch": "esbuild ./src/index.ts --bundle --watch --format=esm --outfile=./dist/timer.js --platform=browser --target=esnext"
 	},
 	"type": "module",
 	"types": "src/index.d.ts",
-	"unpkg": "dist/timer.js",
-	"version": "0.8.0"
+	"unpkg": "dist/timer.iife.js",
+	"version": "0.9.0"
 }
