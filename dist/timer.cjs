@@ -1,2 +1,132 @@
-"use strict";var c=Object.defineProperty;var h=Object.getOwnPropertyDescriptor;var m=Object.getOwnPropertyNames;var v=Object.prototype.hasOwnProperty;var w=(t,e,n)=>e in t?c(t,e,{enumerable:!0,configurable:!0,writable:!0,value:n}):t[e]=n;var k=(t,e)=>{for(var n in e)c(t,n,{get:e[n],enumerable:!0})},g=(t,e,n,r)=>{if(e&&typeof e=="object"||typeof e=="function")for(let a of m(e))!v.call(t,a)&&a!==n&&c(t,a,{get:()=>e[a],enumerable:!(r=h(e,a))||r.enumerable});return t};var y=t=>g(c({},"__esModule",{value:!0}),t);var u=(t,e,n)=>(w(t,typeof e!="symbol"?e+"":e,n),n);var A={};k(A,{Repeated:()=>i,Waited:()=>l,repeat:()=>C,wait:()=>x});module.exports=y(A);var p=Math.round(16.666666666666668),s=class{constructor(e,n,r){u(this,"callback");u(this,"count");u(this,"frame");u(this,"running",!1);u(this,"time");let a=this instanceof i,o=a?"repeated":"waited";if(typeof e!="function")throw new Error(`A ${o} timer must have a callback function`);if(typeof n!="number"||n<0)throw new Error(`A ${o} timer must have a non-negative number as its time`);if(a&&(typeof r!="number"||r<2))throw new Error("A repeated timer must have a number above 1 as its repeat count");this.callback=e,this.count=r,this.time=n}get active(){return this.running}static run(e){e.running=!0;let n=0,r;function a(o){if(!e.running)return;r!=null||(r=o);let f=o-r,d=f-p,b=f+p;if(d<e.time&&e.time<b)if(e.running&&e.callback(e instanceof i?n:void 0),n+=1,e instanceof i&&n<e.count)r=void 0;else{e.stop();return}e.frame=window.requestAnimationFrame(a)}e.frame=window.requestAnimationFrame(a)}restart(){return this.stop(),s.run(this),this}start(){return this.running?this:(s.run(this),this)}stop(){return this.running=!1,typeof this.frame=="undefined"?this:(window.cancelAnimationFrame(this.frame),this.frame=void 0,this)}},i=class extends s{},l=class extends s{constructor(e,n){super(e,n,1)}};function C(t,e,n){return new i(t,e,n).start()}function x(t,e){return new l(t,e).start()}
+"use strict";
+var __defProp = Object.defineProperty;
+var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+var __getOwnPropNames = Object.getOwnPropertyNames;
+var __hasOwnProp = Object.prototype.hasOwnProperty;
+var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
+var __export = (target, all) => {
+  for (var name in all)
+    __defProp(target, name, { get: all[name], enumerable: true });
+};
+var __copyProps = (to, from, except, desc) => {
+  if (from && typeof from === "object" || typeof from === "function") {
+    for (let key of __getOwnPropNames(from))
+      if (!__hasOwnProp.call(to, key) && key !== except)
+        __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+  }
+  return to;
+};
+var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+var __publicField = (obj, key, value) => {
+  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
+  return value;
+};
+
+// src/index.ts
+var src_exports = {};
+__export(src_exports, {
+  Repeated: () => Repeated,
+  Waited: () => Waited,
+  repeat: () => repeat,
+  wait: () => wait
+});
+module.exports = __toCommonJS(src_exports);
+var milliseconds = Math.round(1e3 / 60);
+var cancel = cancelAnimationFrame != null ? cancelAnimationFrame : function(id) {
+  clearTimeout == null ? void 0 : clearTimeout(id);
+};
+var request = requestAnimationFrame != null ? requestAnimationFrame : function(callback) {
+  var _a;
+  return (_a = setTimeout == null ? void 0 : setTimeout(() => {
+    callback(Date.now());
+  }, milliseconds)) != null ? _a : -1;
+};
+var Timed = class {
+  constructor(callback, time, count) {
+    __publicField(this, "callback");
+    __publicField(this, "count");
+    __publicField(this, "frame");
+    __publicField(this, "running", false);
+    __publicField(this, "time");
+    const isRepeated = this instanceof Repeated;
+    const type = isRepeated ? "repeated" : "waited";
+    if (typeof callback !== "function") {
+      throw new Error(`A ${type} timer must have a callback function`);
+    }
+    if (typeof time !== "number" || time < 0) {
+      throw new Error(`A ${type} timer must have a non-negative number as its time`);
+    }
+    if (isRepeated && (typeof count !== "number" || count < 2)) {
+      throw new Error("A repeated timer must have a number above 1 as its repeat count");
+    }
+    this.callback = callback;
+    this.count = count;
+    this.time = time;
+  }
+  get active() {
+    return this.running;
+  }
+  static run(timed) {
+    timed.running = true;
+    let count = 0;
+    let start;
+    function step(timestamp) {
+      if (!timed.running) {
+        return;
+      }
+      start != null ? start : start = timestamp;
+      const elapsed = timestamp - start;
+      const elapsedMinimum = elapsed - milliseconds;
+      const elapsedMaximum = elapsed + milliseconds;
+      if (elapsedMinimum < timed.time && timed.time < elapsedMaximum) {
+        if (timed.running) {
+          timed.callback(timed instanceof Repeated ? count : void 0);
+        }
+        count += 1;
+        if (timed instanceof Repeated && count < timed.count) {
+          start = void 0;
+        } else {
+          timed.stop();
+          return;
+        }
+      }
+      timed.frame = request(step);
+    }
+    timed.frame = request(step);
+  }
+  restart() {
+    this.stop();
+    Timed.run(this);
+    return this;
+  }
+  start() {
+    if (this.running) {
+      return this;
+    }
+    Timed.run(this);
+    return this;
+  }
+  stop() {
+    this.running = false;
+    if (typeof this.frame === "undefined") {
+      return this;
+    }
+    cancel(this.frame);
+    this.frame = void 0;
+    return this;
+  }
+};
+var Repeated = class extends Timed {
+};
+var Waited = class extends Timed {
+  constructor(callback, time) {
+    super(callback, time, 1);
+  }
+};
+function repeat(callback, time, count) {
+  return new Repeated(callback, time, count).start();
+}
+function wait(callback, time) {
+  return new Waited(callback, time).start();
+}
 //# sourceMappingURL=timer.cjs.map

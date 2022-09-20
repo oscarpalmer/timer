@@ -8,8 +8,8 @@
 	"devDependencies": {
 		"@tsconfig/recommended": "^1.0.0",
 		"@types/node": "^18.7.0",
-		"@typescript-eslint/eslint-plugin": "^5.36.0",
-		"@typescript-eslint/parser": "^5.36.0",
+		"@typescript-eslint/eslint-plugin": "^5.38.0",
+		"@typescript-eslint/parser": "^5.38.0",
 		"esbuild": "^0.15.0",
 		"eslint": "^8.23.0",
 		"eslint-config-xo": "^0.42.0",
@@ -44,7 +44,7 @@
 	},
 	"scripts": {
 		"build": "npm run build:cjs; npm run build:esm; npm run build:iife",
-		"build:cjs": "esbuild ./src/index.ts --bundle --minify --sourcemap --format=cjs --outfile=./dist/timer.cjs --target=es2017",
+		"build:cjs": "esbuild ./src/index.ts --bundle --sourcemap --format=cjs --outfile=./dist/timer.cjs --target=es2017",
 		"build:esm": "esbuild ./src/index.ts --bundle --sourcemap --format=esm --outfile=./dist/timer.js --target=esnext",
 		"build:iife": "esbuild ./src/index.ts --bundle --minify --sourcemap --format=iife --global-name=Timer --outfile=./dist/timer.iife.js --target=es2017",
 		"watch": "esbuild ./src/index.ts --bundle --watch --format=esm --outfile=./dist/timer.js --platform=browser --target=esnext"
@@ -52,5 +52,5 @@
 	"type": "module",
 	"types": "src/index.d.ts",
 	"unpkg": "dist/timer.iife.js",
-	"version": "0.9.0"
+	"version": "0.10.0"
 }

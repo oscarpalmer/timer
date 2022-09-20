@@ -1,5 +1,13 @@
 // src/index.ts
 var milliseconds = Math.round(1e3 / 60);
+var cancel = cancelAnimationFrame ?? function(id) {
+  clearTimeout?.(id);
+};
+var request = requestAnimationFrame ?? function(callback) {
+  return setTimeout?.(() => {
+    callback(Date.now());
+  }, milliseconds) ?? -1;
+};
 var Timed = class {
   callback;
   count;
@@ -49,9 +57,9 @@ var Timed = class {
           return;
         }
       }
-      timed.frame = window.requestAnimationFrame(step);
+      timed.frame = request(step);
     }
-    timed.frame = window.requestAnimationFrame(step);
+    timed.frame = request(step);
   }
   restart() {
     this.stop();
@@ -70,7 +78,7 @@ var Timed = class {
     if (typeof this.frame === "undefined") {
       return this;
     }
-    window.cancelAnimationFrame(this.frame);
+    cancel(this.frame);
     this.frame = void 0;
     return this;
   }

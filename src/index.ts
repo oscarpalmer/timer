@@ -3,6 +3,16 @@ type WaitedCallback = () => void;
 
 const milliseconds = Math.round(1000 / 60);
 
+const cancel = cancelAnimationFrame ?? function (id: number): void {
+	clearTimeout?.(id);
+};
+
+const request = requestAnimationFrame ?? function (callback: FrameRequestCallback): number {
+	return (setTimeout?.(() => {
+		callback(Date.now());
+	}, milliseconds) ?? -1) as unknown as number;
+};
+
 abstract class Timed<Callback> {
 	private readonly callback: Callback;
 	private readonly count: number;
@@ -73,10 +83,10 @@ abstract class Timed<Callback> {
 				}
 			}
 
-			timed.frame = window.requestAnimationFrame(step);
+			timed.frame = request(step);
 		}
 
-		timed.frame = window.requestAnimationFrame(step);
+		timed.frame = request(step);
 	}
 
 	/**
@@ -113,7 +123,7 @@ abstract class Timed<Callback> {
 			return this;
 		}
 
-		window.cancelAnimationFrame(this.frame);
+		cancel(this.frame);
 
 		this.frame = undefined;
 
