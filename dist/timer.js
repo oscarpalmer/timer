@@ -14,6 +14,9 @@ var Timed = class {
   frame;
   running = false;
   time;
+  /**
+   * Is the timer active?
+   */
   get active() {
     return this.running;
   }
@@ -61,11 +64,17 @@ var Timed = class {
     }
     timed.frame = request(step);
   }
+  /**
+   * Restart timer
+   */
   restart() {
     this.stop();
     Timed.run(this);
     return this;
   }
+  /**
+   * Start timer
+   */
   start() {
     if (this.running) {
       return this;
@@ -73,6 +82,9 @@ var Timed = class {
     Timed.run(this);
     return this;
   }
+  /**
+   * Stop timer
+   */
   stop() {
     this.running = false;
     if (typeof this.frame === "undefined") {

@@ -29,7 +29,10 @@ abstract class Timed<Callback> {
 
 	constructor(callback: Callback, time: number,	count: number) {
 		const isRepeated = this instanceof Repeated;
-		const type = isRepeated ? 'repeated' : 'waited';
+
+		const type = isRepeated
+		? 'repeated'
+		: 'waited';
 
 		if (typeof callback !== 'function') {
 			throw new Error(`A ${type} timer must have a callback function`);

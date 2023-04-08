@@ -15,7 +15,7 @@ describe('Timer, Repeated', function () {
 		it('should create a proper repeated timer', function () {
 			chai.assert.ok(new Repeated(() => {}, 0, 2) instanceof Repeated);
 		});
-	
+
 		it('should handle bad parameters', function () {
 			chai.assert.throws(function () { new Repeated(null, null, null); }, /callback/);
 			chai.assert.throws(function () { new Repeated(() => {}, null, null); }, /time/);
@@ -64,7 +64,7 @@ describe('Timer, Waited', function () {
 		it('should create a proper waited timer', function () {
 			chai.assert.ok(new Waited(() => {}, 0));
 		});
-	
+
 		it('should handle bad parameters', function () {
 			chai.assert.throws(function () { new Waited(null, null); }, /callback/);
 			chai.assert.throws(function () { new Waited(() => {}, null); }, /time/);
@@ -79,41 +79,41 @@ describe('Timer, Repeated & Waited', function () {
 				done();
 			}, 125)).start();
 		});
-	
+
 		it('should be able to stop', function (done) {
 			let value = 0;
-	
+
 			const waited = new Waited(() => {
 				value = 1234;
 			}, 125);
-	
+
 			wait(() => {
 				waited.stop();
 			}, 250);
-	
+
 			wait(() => {
 				chai.assert.equal(value, 0);
-	
+
 				done();
 			}, 375);
 		});
-	
+
 		it('should be able to restart', function (done) {
 			let value = 0;
-	
+
 			const waited = new Waited(() => {
 				value += 1;
 			}, 125);
-	
+
 			waited.start();
-	
+
 			wait(() => {
 				waited.restart();
 			}, 250);
-	
+
 			wait(() => {
 				chai.assert.equal(value, 2);
-	
+
 				done();
 			}, 500);
 		});
