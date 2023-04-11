@@ -21,6 +21,7 @@ describe('Timer, Repeated', function () {
 			chai.assert.throws(function () { new Repeated(() => {}, null, null); }, /time/);
 			chai.assert.throws(function () { new Repeated(() => {}, 0, null); }, /count/);
 			chai.assert.throws(function () { new Repeated(() => {}, 0, 1); }, /count/);
+			chai.assert.throws(function () { new Repeated(() => {}, 0, 2, 'blah'); }, /after-callback/);
 		});
 	});
 
@@ -114,6 +115,37 @@ describe('Timer, Repeated & Waited', function () {
 			wait(() => {
 				chai.assert.equal(value, 2);
 
+				done();
+			}, 500);
+		});
+	});
+});
+
+describe('Repeated', function () {
+	describe('Methods', function () {
+		it('should be able to handle after-callbacks with proper finished-state', function (done) {
+			let canceledValue = 0;
+			let finishedValue = 0;
+
+			const canceledTimer = repeat(() => {
+				canceledValue += 1;
+			}, 0, 10, (finished) => {
+				chai.assert.equal(finished, false);
+				chai.assert.equal(canceledValue, 1);
+			});
+
+			repeat(() => {
+				finishedValue += 1;
+			}, 0, 10, (finished) => {
+				chai.assert.equal(finished, true);
+				chai.assert.equal(finishedValue, 10);
+			});
+
+			wait(() => {
+				canceledTimer.stop();
+			}, 0);
+
+			wait(() => {
 				done();
 			}, 500);
 		});
