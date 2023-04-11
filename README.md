@@ -60,6 +60,20 @@ Both the nice helper methods and the class syntax create similar objects – `Wa
 |`stop()`|Stops the timer|
 |`restart()`|Restarts the timer|
 
+## Callbacks
+
+When you create a repeated timer, you can also provide a fourth parameter to act as a callback to run when the timer stops, as below:
+
+```typescript
+function after(finished: boolean) {
+	// Let's do something fun!
+}
+
+repeat(() => {}, 0, 10, after);
+```
+
+The `finished`-parameter for the `after`-function can be used to determine if the timer was stopped manually, or if it was able to finish its work.
+
 ## License
 
 [MIT licensed](LICENSE), natch :wink:
