@@ -1,4 +1,4 @@
-import {repeat, wait, Repeated, Waited} from '../dist/timer.js';
+import {repeat, wait, Repeated, Waited} from '../src/index.js';
 
 describe('Functions', function () {
   it('should create and start a repeated timer', function () {
@@ -86,7 +86,9 @@ describe('Timer, Repeated & Waited', function () {
 
 			const waited = new Waited(() => {
 				value = 1234;
-			}, 125);
+			}, 500);
+
+			waited.start();
 
 			wait(() => {
 				waited.stop();

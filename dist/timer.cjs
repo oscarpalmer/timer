@@ -1,4 +1,3 @@
-"use strict";
 var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
@@ -22,7 +21,7 @@ var __publicField = (obj, key, value) => {
   return value;
 };
 
-// src/index.ts
+// src/index.js
 var src_exports = {};
 __export(src_exports, {
   Repeated: () => Repeated,
@@ -32,111 +31,115 @@ __export(src_exports, {
 });
 module.exports = __toCommonJS(src_exports);
 var milliseconds = Math.round(1e3 / 60);
-var request = requestAnimationFrame != null ? requestAnimationFrame : function(callback) {
-  var _a;
-  return (_a = setTimeout == null ? void 0 : setTimeout(() => {
+var request = globalThis.requestAnimationFrame ?? function(callback) {
+  return setTimeout?.(() => {
     callback(Date.now());
-  }, milliseconds)) != null ? _a : -1;
+  }, milliseconds);
 };
+function run(timed) {
+  timed.state.active = true;
+  timed.state.finished = false;
+  const isRepeated = timed instanceof Repeated;
+  let count = 0;
+  let start;
+  function step(timestamp) {
+    if (!timed.state.active) {
+      return;
+    }
+    start ?? (start = timestamp);
+    const elapsed = timestamp - start;
+    const elapsedMinimum = elapsed - milliseconds;
+    const elapsedMaximum = elapsed + milliseconds;
+    if (elapsedMinimum < timed.configuration.time && timed.configuration.time < elapsedMaximum) {
+      if (timed.state.active) {
+        timed.callbacks.default(isRepeated ? count : void 0);
+      }
+      count += 1;
+      if (isRepeated && count < timed.configuration.count) {
+        start = void 0;
+      } else {
+        timed.state.finished = true;
+        timed.stop();
+        return;
+      }
+    }
+    timed.state.frame = request(step);
+  }
+  timed.state.frame = request(step);
+}
 var Timed = class {
+  /**
+   * @param {Function} callback
+   * @param {number} time
+   * @param {number} count
+   * @param {Function?} afterCallback
+   */
   constructor(callback, time, count, afterCallback) {
+    /**
+     * @readonly
+     * @type {{after?: Function; default: Function}}
+     */
     __publicField(this, "callbacks");
+    /**
+     * @readonly
+     * @type {{count: number; time: number}}
+     */
     __publicField(this, "configuration");
-    __publicField(this, "state", {
-      active: false,
-      finished: false
-    });
+    /**
+     * @readonly
+     * @type {{active: boolean; finished: boolean; frame?: DOMHighResTimeStamp}}
+     */
+    __publicField(this, "state");
     const isRepeated = this instanceof Repeated;
     const type = isRepeated ? "repeated" : "waited";
     if (typeof callback !== "function") {
-      throw new Error(`A ${type} timer must have a callback function`);
+      throw new TypeError(`A ${type} timer must have a callback function`);
     }
     if (typeof time !== "number" || time < 0) {
-      throw new Error(`A ${type} timer must have a non-negative number as its time`);
+      throw new TypeError(`A ${type} timer must have a non-negative number as its time`);
     }
     if (isRepeated && (typeof count !== "number" || count < 2)) {
-      throw new Error("A repeated timer must have a number above 1 as its repeat count");
+      throw new TypeError("A repeated timer must have a number above 1 as its repeat count");
     }
-    if (isRepeated && afterCallback != null && typeof afterCallback !== "function") {
-      throw new Error("A repeated timer's after-callback must be a function");
+    if (isRepeated && afterCallback !== void 0 && typeof afterCallback !== "function") {
+      throw new TypeError("A repeated timer's after-callback must be a function");
     }
     this.configuration = { count, time };
     this.callbacks = {
       after: afterCallback,
       default: callback
     };
+    this.state = {
+      active: false,
+      finished: false,
+      frame: null
+    };
   }
-  /**
-   * Is the timer active?
-   */
+  /** */
   get active() {
     return this.state.active;
   }
-  /**
-   * Has the timer finished?
-   */
   get finished() {
-    return !this.state.active && this.state.finished;
+    return !this.active && this.state.finished;
   }
-  static run(timed) {
-    timed.state.active = true;
-    timed.state.finished = false;
-    const isRepeated = timed instanceof Repeated;
-    let count = 0;
-    let start;
-    function step(timestamp) {
-      if (!timed.state.active) {
-        return;
-      }
-      start != null ? start : start = timestamp;
-      const elapsed = timestamp - start;
-      const elapsedMinimum = elapsed - milliseconds;
-      const elapsedMaximum = elapsed + milliseconds;
-      if (elapsedMinimum < timed.configuration.time && timed.configuration.time < elapsedMaximum) {
-        if (timed.state.active) {
-          timed.callbacks.default(isRepeated ? count : void 0);
-        }
-        count += 1;
-        if (isRepeated && count < timed.configuration.count) {
-          start = void 0;
-        } else {
-          timed.state.finished = true;
-          timed.stop();
-          return;
-        }
-      }
-      timed.state.frame = request(step);
-    }
-    timed.state.frame = request(step);
-  }
-  /**
-   * Restart timer
-   */
   restart() {
     this.stop();
-    Timed.run(this);
+    run(this);
     return this;
   }
-  /**
-   * Start timer
-   */
   start() {
     if (!this.state.active) {
-      Timed.run(this);
+      run(this);
     }
     return this;
   }
-  /**
-   * Stop timer
-   */
   stop() {
-    var _a, _b, _c;
     this.state.active = false;
-    if (typeof this.state.frame === "undefined") {
+    if (this.state.frame === void 0) {
       return this;
     }
-    (_a = cancelAnimationFrame != null ? cancelAnimationFrame : clearTimeout) == null ? void 0 : _a(this.state.frame);
-    (_c = (_b = this.callbacks).after) == null ? void 0 : _c.call(_b, this.finished);
+    (globalThis.cancelAnimationFrame ?? clearTimeout)?.(this.state.frame);
+    this.callbacks.after?.(this.finished);
     this.state.frame = void 0;
     return this;
   }
@@ -144,8 +147,12 @@ var Timed = class {
 var Repeated = class extends Timed {
 };
 var Waited = class extends Timed {
+  /**
+   * @param {Function} callback
+   * @param {number} time
+   */
   constructor(callback, time) {
-    super(callback, time, 1);
+    super(callback, time, 1, null);
   }
 };
 function repeat(callback, time, count, afterCallback) {
@@ -154,4 +161,3 @@ function repeat(callback, time, count, afterCallback) {
 function wait(callback, time) {
   return new Waited(callback, time).start();
 }
-//# sourceMappingURL=timer.cjs.map

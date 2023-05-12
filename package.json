@@ -6,15 +6,9 @@
 	"browser": "dist/timer.iife.js",
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
-		"@tsconfig/recommended": "^1.0",
-		"@types/node": "^18.15",
-		"@typescript-eslint/eslint-plugin": "^5.57",
-		"@typescript-eslint/parser": "^5.57",
 		"esbuild": "^0.17",
-		"eslint": "^8.38",
-		"eslint-config-xo": "^0.43",
-		"eslint-config-xo-typescript": "^0.57",
-		"typescript": "^5.0"
+		"typescript": "^5.0",
+		"xo": "^0.54"
 	},
 	"exports": {
 		".": {
@@ -43,14 +37,14 @@
 		"url": "git+https://github.com/oscarpalmer/timer.git"
 	},
 	"scripts": {
-		"build": "npm run build:cjs; npm run build:esm; npm run build:iife",
-		"build:cjs": "esbuild ./src/index.ts --bundle --sourcemap --format=cjs --outfile=./dist/timer.cjs --target=es2017",
-		"build:esm": "esbuild ./src/index.ts --bundle --sourcemap --format=esm --outfile=./dist/timer.js --target=esnext",
-		"build:iife": "esbuild ./src/index.ts --bundle --minify --sourcemap --format=iife --global-name=Timer --outfile=./dist/timer.iife.js --target=es2017",
-		"watch": "esbuild ./src/index.ts --bundle --watch --format=esm --outfile=./dist/timer.js --platform=browser --target=esnext"
+		"build": "npm run build:cjs; npm run build:esm; npm run build:iife; npm run types",
+		"build:cjs": "esbuild ./src/index.js --bundle --format=cjs --outfile=./dist/timer.cjs --target=es2020",
+		"build:esm": "esbuild ./src/index.js --bundle --format=esm --outfile=./dist/timer.js --target=es2020",
+		"build:iife": "esbuild ./src/index.js --bundle --minify --format=iife --global-name=Timer --outfile=./dist/timer.iife.js --target=es2020",
+		"types": "./node_modules/.bin/tsc ./src/index.js --allowJs --declaration --emitDeclarationOnly --removeComments"
 	},
 	"type": "module",
 	"types": "src/index.d.ts",
 	"unpkg": "dist/timer.iife.js",
-	"version": "0.12.1"
+	"version": "0.13.0"
 }
