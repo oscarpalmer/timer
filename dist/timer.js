@@ -16,7 +16,7 @@ function run(timed) {
   timed.state.active = true;
   timed.state.finished = false;
   const isRepeated = timed instanceof Repeated;
-  let count = 0;
+  let index = 0;
   let start;
   function step(timestamp) {
     if (!timed.state.active) {
@@ -28,10 +28,10 @@ function run(timed) {
     const elapsedMaximum = elapsed + milliseconds;
     if (elapsedMinimum < timed.configuration.time && timed.configuration.time < elapsedMaximum) {
       if (timed.state.active) {
-        timed.callbacks.default(isRepeated ? count : void 0);
+        timed.callbacks.default(isRepeated ? index : void 0);
       }
-      count += 1;
-      if (isRepeated && count < timed.configuration.count) {
+      index += 1;
+      if (isRepeated && index < timed.configuration.count) {
         start = void 0;
       } else {
         timed.state.finished = true;
@@ -45,15 +45,15 @@ function run(timed) {
 }
 var Timed = class {
   /**
-   * @param {Function} callback
+   * @param {RepeatedCallback} callback
    * @param {number} time
    * @param {number} count
-   * @param {Function?} afterCallback
+   * @param {AfterCallback|undefined} afterCallback
    */
   constructor(callback, time, count, afterCallback) {
     /**
      * @readonly
-     * @type {{after?: Function; default: Function}}
+     * @type {{after: AfterCallback | undefined; default: RepeatedCallback}}
      */
     __publicField(this, "callbacks");
     /**

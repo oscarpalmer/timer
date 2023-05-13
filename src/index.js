@@ -1,3 +1,15 @@
+/**
+ * @callback AfterCallback
+ * @param {boolean} finished
+ * @returns {void}
+ */
+
+/**
+ * @callback RepeatedCallback
+ * @param {number} index
+ * @returns {void}
+ */
+
 const milliseconds = Math.round(1000 / 60);
 
 const request = globalThis.requestAnimationFrame ?? function (callback) {
@@ -15,7 +27,7 @@ function run(timed) {
 
 	const isRepeated = timed instanceof Repeated;
 
-	let count = 0;
+	let index = 0;
 
 	let start;
 
@@ -33,12 +45,12 @@ function run(timed) {
 
 		if (elapsedMinimum < timed.configuration.time && timed.configuration.time < elapsedMaximum) {
 			if (timed.state.active) {
-				timed.callbacks.default(isRepeated ? count : undefined);
+				timed.callbacks.default(isRepeated ? index : undefined);
 			}
 
-			count += 1;
+			index += 1;
 
-			if (isRepeated && count < timed.configuration.count) {
+			if (isRepeated && index < timed.configuration.count) {
 				start = undefined;
 			} else {
 				timed.state.finished = true;
@@ -58,7 +70,7 @@ function run(timed) {
 class Timed {
 	/**
 	 * @readonly
-	 * @type {{after?: Function; default: Function}}
+	 * @type {{after: AfterCallback | undefined; default: RepeatedCallback}}
 	 */
 	callbacks;
 
@@ -85,10 +97,10 @@ class Timed {
 	}
 
 	/**
-	 * @param {Function} callback
+	 * @param {RepeatedCallback} callback
 	 * @param {number} time
 	 * @param {number} count
-	 * @param {Function?} afterCallback
+	 * @param {AfterCallback|undefined} afterCallback
 	 */
 	constructor(callback, time, count, afterCallback) {
 		const isRepeated = this instanceof Repeated;
@@ -173,10 +185,10 @@ export class Waited extends Timed {
 }
 
 /**
- * @param {Function} callback
+ * @param {RepeatedCallback} callback
  * @param {number} time
  * @param {number} count
- * @param {Function?} afterCallback
+ * @param {AfterCallback|undefined} afterCallback
  * @return {Repeated} A repeated timer
  */
 export function repeat(callback, time, count, afterCallback) {

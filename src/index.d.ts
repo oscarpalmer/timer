@@ -1,15 +1,17 @@
-export function repeat(callback: Function, time: number, count: number, afterCallback: Function | null): Repeated;
+export function repeat(callback: RepeatedCallback, time: number, count: number, afterCallback: AfterCallback | undefined): Repeated;
 export function wait(callback: Function, time: number): Waited;
 export class Repeated extends Timed {
 }
 export class Waited extends Timed {
     constructor(callback: Function, time: number);
 }
+export type AfterCallback = (finished: boolean) => void;
+export type RepeatedCallback = (index: number) => void;
 declare class Timed {
-    constructor(callback: Function, time: number, count: number, afterCallback: Function | null);
+    constructor(callback: RepeatedCallback, time: number, count: number, afterCallback: AfterCallback | undefined);
     readonly callbacks: {
-        after?: Function;
-        default: Function;
+        after: AfterCallback | undefined;
+        default: RepeatedCallback;
     };
     readonly configuration: {
         count: number;
