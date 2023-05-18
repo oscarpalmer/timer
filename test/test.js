@@ -1,7 +1,7 @@
 import {repeat, wait, Repeated, Waited} from '../src/index.js';
 
 describe('Functions', function () {
-  it('should create and start a repeated timer', function () {
+	it('should create and start a repeated timer', function () {
 		chai.assert.ok(repeat(() => {}, 0, 2) instanceof Repeated);
 	});
 
@@ -17,11 +17,25 @@ describe('Timer, Repeated', function () {
 		});
 
 		it('should handle bad parameters', function () {
-			chai.assert.throws(function () { new Repeated(null, null, null); }, /callback/);
-			chai.assert.throws(function () { new Repeated(() => {}, null, null); }, /time/);
-			chai.assert.throws(function () { new Repeated(() => {}, 0, null); }, /count/);
-			chai.assert.throws(function () { new Repeated(() => {}, 0, 1); }, /count/);
-			chai.assert.throws(function () { new Repeated(() => {}, 0, 2, 'blah'); }, /after-callback/);
+			chai.assert.throws(function () {
+				new Repeated(null, null, null);
+			}, /callback/);
+
+			chai.assert.throws(function () {
+				new Repeated(() => {}, null, null);
+			}, /time/);
+
+			chai.assert.throws(function () {
+				new Repeated(() => {}, 0, null);
+			}, /count/);
+
+			chai.assert.throws(function () {
+				new Repeated(() => {}, 0, 1);
+			}, /count/);
+
+			chai.assert.throws(function () {
+				new Repeated(() => {}, 0, 2, 'blah');
+			}, /after-callback/);
 		});
 	});
 
@@ -29,9 +43,13 @@ describe('Timer, Repeated', function () {
 		it('should run as many times as set', function (done) {
 			let value = 0;
 
-			repeat(() => {
-				value += 1;
-			}, 25, 10);
+			repeat(
+				() => {
+					value += 1;
+				},
+				25,
+				10,
+			);
 
 			wait(() => {
 				chai.assert.equal(value, 10);
@@ -43,9 +61,13 @@ describe('Timer, Repeated', function () {
 		it('should run until canceled', function (done) {
 			let value = 0;
 
-			const repeated = repeat(() => {
-				value += 1;
-			}, 25, 10);
+			const repeated = repeat(
+				() => {
+					value += 1;
+				},
+				25,
+				10,
+			);
 
 			wait(() => {
 				repeated.stop();
@@ -67,8 +89,13 @@ describe('Timer, Waited', function () {
 		});
 
 		it('should handle bad parameters', function () {
-			chai.assert.throws(function () { new Waited(null, null); }, /callback/);
-			chai.assert.throws(function () { new Waited(() => {}, null); }, /time/);
+			chai.assert.throws(function () {
+				new Waited(null, null);
+			}, /callback/);
+
+			chai.assert.throws(function () {
+				new Waited(() => {}, null);
+			}, /time/);
 		});
 	});
 });
@@ -76,9 +103,9 @@ describe('Timer, Waited', function () {
 describe('Timer, Repeated & Waited', function () {
 	describe('Methods', function () {
 		it('should be able to start', function (done) {
-			(new Waited(() => {
+			new Waited(() => {
 				done();
-			}, 125)).start();
+			}, 125).start();
 		});
 
 		it('should be able to stop', function (done) {
@@ -129,19 +156,29 @@ describe('Repeated', function () {
 			let canceledValue = 0;
 			let finishedValue = 0;
 
-			const canceledTimer = repeat(() => {
-				canceledValue += 1;
-			}, 0, 10, (finished) => {
-				chai.assert.equal(finished, false);
-				chai.assert.equal(canceledValue, 1);
-			});
+			const canceledTimer = repeat(
+				() => {
+					canceledValue += 1;
+				},
+				0,
+				10,
+				finished => {
+					chai.assert.equal(finished, false);
+					chai.assert.equal(canceledValue, 1);
+				},
+			);
 
-			repeat(() => {
-				finishedValue += 1;
-			}, 0, 10, (finished) => {
-				chai.assert.equal(finished, true);
-				chai.assert.equal(finishedValue, 10);
-			});
+			repeat(
+				() => {
+					finishedValue += 1;
+				},
+				0,
+				10,
+				finished => {
+					chai.assert.equal(finished, true);
+					chai.assert.equal(finishedValue, 10);
+				},
+			);
 
 			wait(() => {
 				canceledTimer.stop();

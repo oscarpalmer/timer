@@ -96,13 +96,19 @@ var Timed = class {
       throw new TypeError(`A ${type} timer must have a callback function`);
     }
     if (typeof time !== "number" || time < 0) {
-      throw new TypeError(`A ${type} timer must have a non-negative number as its time`);
+      throw new TypeError(
+        `A ${type} timer must have a non-negative number as its time`
+      );
     }
     if (isRepeated && (typeof count !== "number" || count < 2)) {
-      throw new TypeError("A repeated timer must have a number above 1 as its repeat count");
+      throw new TypeError(
+        "A repeated timer must have a number above 1 as its repeat count"
+      );
     }
     if (isRepeated && afterCallback !== void 0 && typeof afterCallback !== "function") {
-      throw new TypeError("A repeated timer's after-callback must be a function");
+      throw new TypeError(
+        "A repeated timer's after-callback must be a function"
+      );
     }
     this.configuration = { count, time };
     this.callbacks = {

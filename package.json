@@ -7,20 +7,23 @@
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
 		"esbuild": "^0.17",
-		"typescript": "^5.0",
 		"xo": "^0.54"
 	},
 	"exports": {
 		".": {
 			"types": "./src/index.d.ts",
-      "browser": "./dist/timer.iife.js",
-      "module": "./dist/timer.js",
-      "import": "./dist/timer.js",
-      "require": "./dist/timer.cjs"
+			"browser": "./dist/timer.iife.js",
+			"module": "./dist/timer.js",
+			"import": "./dist/timer.js",
+			"require": "./dist/timer.cjs",
+			"default": "./dist/timer.js"
 		},
 		"./package.json": "./package.json"
 	},
-	"files": ["dist", "src"],
+	"files": [
+		"dist",
+		"src"
+	],
 	"jsdelivr": "dist/timer.iife.js",
 	"keywords": [
 		"timer",
@@ -41,10 +44,11 @@
 		"build:cjs": "esbuild ./src/index.js --bundle --format=cjs --outfile=./dist/timer.cjs --target=es2020",
 		"build:esm": "esbuild ./src/index.js --bundle --format=esm --outfile=./dist/timer.js --target=es2020",
 		"build:iife": "esbuild ./src/index.js --bundle --minify --format=iife --global-name=Timer --outfile=./dist/timer.iife.js --target=es2020",
-		"types": "./node_modules/.bin/tsc ./src/index.js --allowJs --declaration --emitDeclarationOnly --removeComments"
+		"types": "./node_modules/.bin/tsc ./src/index.js --allowJs --declaration --emitDeclarationOnly --removeComments",
+		"xo": "./node_modules/.bin/xo ./src/*.js --env browser"
 	},
 	"type": "module",
 	"types": "src/index.d.ts",
 	"unpkg": "dist/timer.iife.js",
-	"version": "0.14.0"
+	"version": "0.15.0"
 }

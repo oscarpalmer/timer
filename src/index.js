@@ -12,11 +12,12 @@
 
 const milliseconds = Math.round(1000 / 60);
 
-const request = globalThis.requestAnimationFrame ?? function (callback) {
-	return setTimeout?.(() => {
-		callback(Date.now());
-	}, milliseconds);
-};
+const request = globalThis.requestAnimationFrame
+	?? function (callback) {
+		return setTimeout?.(() => {
+			callback(Date.now());
+		}, milliseconds);
+	};
 
 /**
  * @param {Timed} timed
@@ -43,7 +44,10 @@ function run(timed) {
 		const elapsedMinimum = elapsed - milliseconds;
 		const elapsedMaximum = elapsed + milliseconds;
 
-		if (elapsedMinimum < timed.configuration.time && timed.configuration.time < elapsedMaximum) {
+		if (
+			elapsedMinimum < timed.configuration.time
+			&& timed.configuration.time < elapsedMaximum
+		) {
 			if (timed.state.active) {
 				timed.callbacks.default(isRepeated ? index : undefined);
 			}
@@ -105,24 +109,32 @@ class Timed {
 	constructor(callback, time, count, afterCallback) {
 		const isRepeated = this instanceof Repeated;
 
-		const type = isRepeated
-			? 'repeated'
-			: 'waited';
+		const type = isRepeated ? 'repeated' : 'waited';
 
 		if (typeof callback !== 'function') {
 			throw new TypeError(`A ${type} timer must have a callback function`);
 		}
 
 		if (typeof time !== 'number' || time < 0) {
-			throw new TypeError(`A ${type} timer must have a non-negative number as its time`);
+			throw new TypeError(
+				`A ${type} timer must have a non-negative number as its time`,
+			);
 		}
 
 		if (isRepeated && (typeof count !== 'number' || count < 2)) {
-			throw new TypeError('A repeated timer must have a number above 1 as its repeat count');
+			throw new TypeError(
+				'A repeated timer must have a number above 1 as its repeat count',
+			);
 		}
 
-		if (isRepeated && afterCallback !== undefined && typeof afterCallback !== 'function') {
-			throw new TypeError('A repeated timer\'s after-callback must be a function');
+		if (
+			isRepeated
+			&& afterCallback !== undefined
+			&& typeof afterCallback !== 'function'
+		) {
+			throw new TypeError(
+				'A repeated timer\'s after-callback must be a function',
+			);
 		}
 
 		this.configuration = {count, time};
@@ -192,7 +204,7 @@ export class Waited extends Timed {
  * @return {Repeated} A repeated timer
  */
 export function repeat(callback, time, count, afterCallback) {
-	return (new Repeated(callback, time, count, afterCallback)).start();
+	return new Repeated(callback, time, count, afterCallback).start();
 }
 
 /**
@@ -201,5 +213,5 @@ export function repeat(callback, time, count, afterCallback) {
  * @return {Waited} A waited timer
  */
 export function wait(callback, time) {
-	return (new Waited(callback, time)).start();
+	return new Waited(callback, time).start();
 }
