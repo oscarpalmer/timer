@@ -9,21 +9,21 @@ export type AfterCallback = (finished: boolean) => void;
 export type RepeatedCallback = (index: number) => void;
 declare class Timed {
     constructor(callback: RepeatedCallback, time: number, count: number, afterCallback: AfterCallback | undefined);
-    readonly callbacks: {
-        after: AfterCallback | undefined;
-        default: RepeatedCallback;
-    };
+    get active(): boolean;
+    get finished(): boolean;
     readonly configuration: {
         count: number;
         time: number;
+    };
+    readonly callbacks: {
+        after: AfterCallback | undefined;
+        default: RepeatedCallback;
     };
     readonly state: {
         active: boolean;
         finished: boolean;
         frame?: DOMHighResTimeStamp;
     };
-    get active(): boolean;
-    get finished(): boolean;
     restart(): Timed;
     start(): Timed;
     stop(): Timed;

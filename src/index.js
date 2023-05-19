@@ -72,26 +72,6 @@ function run(timed) {
 }
 
 class Timed {
-	/**
-	 * @readonly
-	 * @type {{after: AfterCallback | undefined; default: RepeatedCallback}}
-	 */
-	callbacks;
-
-	/**
-	 * @readonly
-	 * @type {{count: number; time: number}}
-	 */
-	configuration;
-
-	/**
-	 * @readonly
-	 * @type {{active: boolean; finished: boolean; frame?: DOMHighResTimeStamp}}
-	 */
-	state;
-
-	/** */
-
 	get active() {
 		return this.state.active;
 	}
@@ -137,13 +117,25 @@ class Timed {
 			);
 		}
 
+		/**
+		 * @readonly
+		 * @type {{count: number; time: number}}
+		 */
 		this.configuration = {count, time};
 
+		/**
+		 * @readonly
+		 * @type {{after: AfterCallback | undefined; default: RepeatedCallback}}
+		 */
 		this.callbacks = {
 			after: afterCallback,
 			default: callback,
 		};
 
+		/**
+		 * @readonly
+		 * @type {{active: boolean; finished: boolean; frame?: DOMHighResTimeStamp}}
+		 */
 		this.state = {
 			active: false,
 			finished: false,

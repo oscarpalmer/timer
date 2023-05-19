@@ -2,7 +2,6 @@ var __defProp = Object.defineProperty;
 var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
 var __getOwnPropNames = Object.getOwnPropertyNames;
 var __hasOwnProp = Object.prototype.hasOwnProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
 var __export = (target, all) => {
   for (var name in all)
     __defProp(target, name, { get: all[name], enumerable: true });
@@ -16,10 +15,6 @@ var __copyProps = (to, from, except, desc) => {
   return to;
 };
 var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
 
 // src/index.js
 var src_exports = {};
@@ -68,6 +63,12 @@ function run(timed) {
   timed.state.frame = request(step);
 }
 var Timed = class {
+  get active() {
+    return this.state.active;
+  }
+  get finished() {
+    return !this.active && this.state.finished;
+  }
   /**
    * @param {RepeatedCallback} callback
    * @param {number} time
@@ -75,21 +76,6 @@ var Timed = class {
    * @param {AfterCallback|undefined} afterCallback
    */
   constructor(callback, time, count, afterCallback) {
-    /**
-     * @readonly
-     * @type {{after: AfterCallback | undefined; default: RepeatedCallback}}
-     */
-    __publicField(this, "callbacks");
-    /**
-     * @readonly
-     * @type {{count: number; time: number}}
-     */
-    __publicField(this, "configuration");
-    /**
-     * @readonly
-     * @type {{active: boolean; finished: boolean; frame?: DOMHighResTimeStamp}}
-     */
-    __publicField(this, "state");
     const isRepeated = this instanceof Repeated;
     const type = isRepeated ? "repeated" : "waited";
     if (typeof callback !== "function") {
@@ -120,13 +106,6 @@ var Timed = class {
       finished: false,
       frame: null
     };
-  }
-  /** */
-  get active() {
-    return this.state.active;
-  }
-  get finished() {
-    return !this.active && this.state.finished;
   }
   restart() {
     this.stop();

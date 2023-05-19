@@ -1,10 +1,3 @@
-var __defProp = Object.defineProperty;
-var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: true, configurable: true, writable: true, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => {
-  __defNormalProp(obj, typeof key !== "symbol" ? key + "" : key, value);
-  return value;
-};
-
 // src/index.js
 var milliseconds = Math.round(1e3 / 60);
 var request = globalThis.requestAnimationFrame ?? function(callback) {
@@ -44,6 +37,12 @@ function run(timed) {
   timed.state.frame = request(step);
 }
 var Timed = class {
+  get active() {
+    return this.state.active;
+  }
+  get finished() {
+    return !this.active && this.state.finished;
+  }
   /**
    * @param {RepeatedCallback} callback
    * @param {number} time
@@ -51,21 +50,6 @@ var Timed = class {
    * @param {AfterCallback|undefined} afterCallback
    */
   constructor(callback, time, count, afterCallback) {
-    /**
-     * @readonly
-     * @type {{after: AfterCallback | undefined; default: RepeatedCallback}}
-     */
-    __publicField(this, "callbacks");
-    /**
-     * @readonly
-     * @type {{count: number; time: number}}
-     */
-    __publicField(this, "configuration");
-    /**
-     * @readonly
-     * @type {{active: boolean; finished: boolean; frame?: DOMHighResTimeStamp}}
-     */
-    __publicField(this, "state");
     const isRepeated = this instanceof Repeated;
     const type = isRepeated ? "repeated" : "waited";
     if (typeof callback !== "function") {
@@ -96,13 +80,6 @@ var Timed = class {
       finished: false,
       frame: null
     };
-  }
-  /** */
-  get active() {
-    return this.state.active;
-  }
-  get finished() {
-    return !this.active && this.state.finished;
   }
   restart() {
     this.stop();
