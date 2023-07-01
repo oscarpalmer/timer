@@ -1,1 +1,150 @@
-var Timer=(()=>{var c=Object.defineProperty;var v=Object.getOwnPropertyDescriptor;var w=Object.getOwnPropertyNames;var b=Object.prototype.hasOwnProperty;var g=(t,e)=>{for(var s in e)c(t,s,{get:e[s],enumerable:!0})},y=(t,e,s,n)=>{if(e&&typeof e=="object"||typeof e=="function")for(let i of w(e))!b.call(t,i)&&i!==s&&c(t,i,{get:()=>e[i],enumerable:!(n=v(e,i))||n.enumerable});return t};var x=t=>y(c({},"__esModule",{value:!0}),t);var E={};g(E,{Repeated:()=>r,Waited:()=>f,repeat:()=>T,wait:()=>A});var h=Math.round(16.666666666666668),l=globalThis.requestAnimationFrame??function(t){return setTimeout?.(()=>{t(Date.now())},h)};function p(t){t.state.active=!0,t.state.finished=!1;let e=t instanceof r,s=0,n;function i(a){if(!t.state.active)return;n??(n=a);let o=a-n,d=o-h,m=o+h;if(d<t.configuration.time&&t.configuration.time<m)if(t.state.active&&t.callbacks.default(e?s:void 0),s+=1,e&&s<t.configuration.count)n=void 0;else{t.state.finished=!0,t.stop();return}t.state.frame=l(i)}t.state.frame=l(i)}var u=class{get active(){return this.state.active}get finished(){return!this.active&&this.state.finished}constructor(e,s,n,i){let a=this instanceof r,o=a?"repeated":"waited";if(typeof e!="function")throw new TypeError(`A ${o} timer must have a callback function`);if(typeof s!="number"||s<0)throw new TypeError(`A ${o} timer must have a non-negative number as its time`);if(a&&(typeof n!="number"||n<2))throw new TypeError("A repeated timer must have a number above 1 as its repeat count");if(a&&i!==void 0&&typeof i!="function")throw new TypeError("A repeated timer's after-callback must be a function");this.configuration={count:n,time:s},this.callbacks={after:i,default:e},this.state={active:!1,finished:!1,frame:null}}restart(){return this.stop(),p(this),this}start(){return this.state.active||p(this),this}stop(){return this.state.active=!1,this.state.frame===void 0?this:((globalThis.cancelAnimationFrame??clearTimeout)?.(this.state.frame),this.callbacks.after?.(this.finished),this.state.frame=void 0,this)}},r=class extends u{},f=class extends u{constructor(e,s){super(e,s,1,null)}};function T(t,e,s,n){return new r(t,e,s,n).start()}function A(t,e){return new f(t,e).start()}return x(E);})();
+var Timer = (() => {
+  var __defProp = Object.defineProperty;
+  var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
+  var __getOwnPropNames = Object.getOwnPropertyNames;
+  var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __export = (target, all) => {
+    for (var name in all)
+      __defProp(target, name, { get: all[name], enumerable: true });
+  };
+  var __copyProps = (to, from, except, desc) => {
+    if (from && typeof from === "object" || typeof from === "function") {
+      for (let key of __getOwnPropNames(from))
+        if (!__hasOwnProp.call(to, key) && key !== except)
+          __defProp(to, key, { get: () => from[key], enumerable: !(desc = __getOwnPropDesc(from, key)) || desc.enumerable });
+    }
+    return to;
+  };
+  var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: true }), mod);
+
+  // src/index.js
+  var src_exports = {};
+  __export(src_exports, {
+    Repeated: () => Repeated,
+    Waited: () => Waited,
+    repeat: () => repeat,
+    wait: () => wait
+  });
+  var milliseconds = Math.round(1e3 / 60);
+  var request = requestAnimationFrame ?? function(callback) {
+    return setTimeout?.(() => {
+      callback(Date.now());
+    }, milliseconds);
+  };
+  function run(timed) {
+    timed.state.active = true;
+    timed.state.finished = false;
+    const isRepeated = timed instanceof Repeated;
+    let index = 0;
+    let start;
+    function step(timestamp) {
+      if (!timed.state.active) {
+        return;
+      }
+      start ?? (start = timestamp);
+      const elapsed = timestamp - start;
+      const elapsedMinimum = elapsed - milliseconds;
+      const elapsedMaximum = elapsed + milliseconds;
+      if (elapsedMinimum < timed.configuration.time && timed.configuration.time < elapsedMaximum) {
+        if (timed.state.active) {
+          timed.callbacks.default(isRepeated ? index : void 0);
+        }
+        index += 1;
+        if (isRepeated && index < timed.configuration.count) {
+          start = void 0;
+        } else {
+          timed.state.finished = true;
+          timed.stop();
+          return;
+        }
+      }
+      timed.state.frame = request(step);
+    }
+    timed.state.frame = request(step);
+  }
+  var Timed = class {
+    get active() {
+      return this.state.active;
+    }
+    get finished() {
+      return !this.active && this.state.finished;
+    }
+    /**
+     * @param {RepeatedCallback} callback
+     * @param {number} time
+     * @param {number} count
+     * @param {AfterCallback|undefined} afterCallback
+     */
+    constructor(callback, time, count, afterCallback) {
+      const isRepeated = this instanceof Repeated;
+      const type = isRepeated ? "repeated" : "waited";
+      if (typeof callback !== "function") {
+        throw new TypeError(`A ${type} timer must have a callback function`);
+      }
+      if (typeof time !== "number" || time < 0) {
+        throw new TypeError(
+          `A ${type} timer must have a non-negative number as its time`
+        );
+      }
+      if (isRepeated && (typeof count !== "number" || count < 2)) {
+        throw new TypeError(
+          "A repeated timer must have a number above 1 as its repeat count"
+        );
+      }
+      if (isRepeated && afterCallback !== void 0 && typeof afterCallback !== "function") {
+        throw new TypeError(
+          "A repeated timer's after-callback must be a function"
+        );
+      }
+      this.configuration = { count, time };
+      this.callbacks = {
+        after: afterCallback,
+        default: callback
+      };
+      this.state = {
+        active: false,
+        finished: false,
+        frame: null
+      };
+    }
+    restart() {
+      this.stop();
+      run(this);
+      return this;
+    }
+    start() {
+      if (!this.state.active) {
+        run(this);
+      }
+      return this;
+    }
+    stop() {
+      this.state.active = false;
+      if (this.state.frame === void 0) {
+        return this;
+      }
+      (cancelAnimationFrame ?? clearTimeout)?.(this.state.frame);
+      this.callbacks.after?.(this.finished);
+      this.state.frame = void 0;
+      return this;
+    }
+  };
+  var Repeated = class extends Timed {
+  };
+  var Waited = class extends Timed {
+    /**
+     * @param {Function} callback
+     * @param {number} time
+     */
+    constructor(callback, time) {
+      super(callback, time, 1, null);
+    }
+  };
+  function repeat(callback, time, count, afterCallback) {
+    return new Repeated(callback, time, count, afterCallback).start();
+  }
+  function wait(callback, time) {
+    return new Waited(callback, time).start();
+  }
+  return __toCommonJS(src_exports);
+})();

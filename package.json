@@ -6,19 +6,8 @@
 	"browser": "dist/timer.iife.js",
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
-		"esbuild": "^0.17",
+		"esbuild": "^0.18",
 		"xo": "^0.54"
-	},
-	"exports": {
-		".": {
-			"types": "./src/index.d.ts",
-			"browser": "./dist/timer.iife.js",
-			"module": "./dist/timer.js",
-			"import": "./dist/timer.js",
-			"require": "./dist/timer.cjs",
-			"default": "./dist/timer.js"
-		},
-		"./package.json": "./package.json"
 	},
 	"files": [
 		"dist",
@@ -32,7 +21,7 @@
 		"requestAnimationFrame"
 	],
 	"license": "MIT",
-	"main": "dist/timer.cjs",
+	"main": "dist/timer.iife.js",
 	"module": "dist/timer.js",
 	"name": "@oscarpalmer/timer",
 	"repository": {
@@ -40,15 +29,14 @@
 		"url": "git+https://github.com/oscarpalmer/timer.git"
 	},
 	"scripts": {
-		"build": "npm run build:cjs; npm run build:esm; npm run build:iife; npm run types",
-		"build:cjs": "esbuild ./src/index.js --bundle --format=cjs --outfile=./dist/timer.cjs --target=es2020",
+		"build": "npm run build:esm; npm run build:iife; npm run types",
 		"build:esm": "esbuild ./src/index.js --bundle --format=esm --outfile=./dist/timer.js --target=es2020",
-		"build:iife": "esbuild ./src/index.js --bundle --minify --format=iife --global-name=Timer --outfile=./dist/timer.iife.js --target=es2020",
+		"build:iife": "esbuild ./src/index.js --bundle --format=iife --global-name=Timer --outfile=./dist/timer.iife.js --target=es2020",
 		"types": "./node_modules/.bin/tsc ./src/index.js --allowJs --declaration --emitDeclarationOnly --removeComments",
 		"xo": "./node_modules/.bin/xo ./src/*.js --env browser"
 	},
 	"type": "module",
 	"types": "src/index.d.ts",
 	"unpkg": "dist/timer.iife.js",
-	"version": "0.16.0"
+	"version": "0.17.0"
 }

@@ -12,8 +12,9 @@
 
 const milliseconds = Math.round(1000 / 60);
 
-const request = globalThis.requestAnimationFrame
-	?? function (callback) {
+const request =
+	requestAnimationFrame ??
+	function (callback) {
 		return setTimeout?.(() => {
 			callback(Date.now());
 		}, milliseconds);
@@ -45,8 +46,8 @@ function run(timed) {
 		const elapsedMaximum = elapsed + milliseconds;
 
 		if (
-			elapsedMinimum < timed.configuration.time
-			&& timed.configuration.time < elapsedMaximum
+			elapsedMinimum < timed.configuration.time &&
+			timed.configuration.time < elapsedMaximum
 		) {
 			if (timed.state.active) {
 				timed.callbacks.default(isRepeated ? index : undefined);
@@ -108,12 +109,12 @@ class Timed {
 		}
 
 		if (
-			isRepeated
-			&& afterCallback !== undefined
-			&& typeof afterCallback !== 'function'
+			isRepeated &&
+			afterCallback !== undefined &&
+			typeof afterCallback !== 'function'
 		) {
 			throw new TypeError(
-				'A repeated timer\'s after-callback must be a function',
+				"A repeated timer's after-callback must be a function",
 			);
 		}
 
@@ -166,7 +167,7 @@ class Timed {
 			return this;
 		}
 
-		(globalThis.cancelAnimationFrame ?? clearTimeout)?.(this.state.frame);
+		(cancelAnimationFrame ?? clearTimeout)?.(this.state.frame);
 
 		this.callbacks.after?.(this.finished);
 
