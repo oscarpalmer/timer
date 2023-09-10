@@ -54,7 +54,7 @@
 	"type": "module",
 	"types": "src/index.d.ts",
 	"unpkg": "dist/timer.iife.js",
-	"version": "0.17.0",
+	"version": "0.18.0",
 	"xo": {
 		"envs": [
 			"browser"
