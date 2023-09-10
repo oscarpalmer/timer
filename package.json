@@ -6,12 +6,18 @@
 	"browser": "dist/timer.iife.js",
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
-		"esbuild": "^0.18",
-		"xo": "^0.54"
+		"@happy-dom/global-registrator": "^11.0",
+		"@rollup/plugin-typescript": "^11.1",
+		"bun": "^1.0",
+		"prettier": "^3.0",
+		"rollup": "^3.29",
+		"typescript": "^5.2",
+		"xo": "^0.56"
 	},
 	"files": [
 		"dist",
-		"src"
+		"src",
+		"types"
 	],
 	"jsdelivr": "dist/timer.iife.js",
 	"keywords": [
@@ -24,19 +30,39 @@
 	"main": "dist/timer.iife.js",
 	"module": "dist/timer.js",
 	"name": "@oscarpalmer/timer",
+	"prettier": {
+		"arrowParens": "avoid",
+		"bracketSpacing": false,
+		"singleQuote": true,
+		"switchIndent": true,
+		"trailingComma": "all",
+		"useTabs": true
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/oscarpalmer/timer.git"
 	},
 	"scripts": {
-		"build": "npm run build:esm; npm run build:iife; npm run types",
-		"build:esm": "esbuild ./src/index.js --bundle --format=esm --outfile=./dist/timer.js --target=es2020",
-		"build:iife": "esbuild ./src/index.js --bundle --format=iife --global-name=Timer --outfile=./dist/timer.iife.js --target=es2020",
-		"types": "./node_modules/.bin/tsc ./src/index.js --allowJs --declaration --emitDeclarationOnly --removeComments",
-		"xo": "./node_modules/.bin/xo ./src/*.js --env browser"
+		"build": "npm run build:esm && npm run build:iife",
+		"build:esm": "rollup -c",
+		"build:iife": "rollup -c --environment ROLLUP_FORMAT:iife",
+		"test": "bun test --coverage",
+		"types": "tsc ./src/index.ts --outdir ./types --declaration --emitDeclarationOnly",
+		"watch": "rollup -c -w",
+		"xo": "xo ./src/*.ts --env browser"
 	},
 	"type": "module",
 	"types": "src/index.d.ts",
 	"unpkg": "dist/timer.iife.js",
-	"version": "0.17.0"
+	"version": "0.17.0",
+	"xo": {
+		"envs": [
+			"browser"
+		],
+		"prettier": true,
+		"rules": {
+			"import/extensions": "off",
+			"import/no-cycle": "off"
+		}
+	}
 }

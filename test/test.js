@@ -1,4 +1,4 @@
-import {repeat, wait, Repeated, Waited} from '../src/index.js';
+import {repeat, wait, Repeated, Waited} from '../dist/timer.js';
 
 describe('Functions', function () {
 	it('should create and start a repeated timer', function () {
