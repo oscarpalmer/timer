@@ -31,7 +31,7 @@ const state = new WeakMap<Timed<never, never>, State>();
 const milliseconds = Math.round(1000 / 60);
 
 const request =
-	requestAnimationFrame ??
+	globalThis.requestAnimationFrame ??
 	function (callback) {
 		return setTimeout?.(() => {
 			callback(Date.now());

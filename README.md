@@ -1,6 +1,6 @@
 # Timer
 
-[![npm version](https://badge.fury.io/js/@oscarpalmer%2Ftimer.svg)](https://badge.fury.io/js/@oscarpalmer%2Ftimer)
+[![npm](https://badge.fury.io/js/@oscarpalmer%2Ftimer.svg)](https://www.npmjs.com/package/@oscarpalmer/timer) [![Tests](https://github.com/oscarpalmer/timer/actions/workflows/test.yml/badge.svg)](https://github.com/oscarpalmer/timer/actions/workflows/test.yml)
 
 A better solution for timeout- and interval-based timers.
 
