@@ -5,11 +5,11 @@ import {repeat, wait, Repeated, Waited} from '../src/index';
 GlobalRegistrator.register();
 
 describe('Functions', () => {
-	test('Should create and start a repeated timer', function () {
+	test('Should create and start a repeated timer', () => {
 		expect(repeat(() => {}, 0, 2)).toBeInstanceOf(Repeated);
 	});
 
-	test('Should create and start a waited timer', function () {
+	test('Should create and start a waited timer', () => {
 		expect(wait(() => {}, 0)).toBeInstanceOf(Waited);
 	});
 });
@@ -17,79 +17,39 @@ describe('Functions', () => {
 describe('Timer, Repeated', () => {
 	describe('Constructor', () => {
 		test('Should handle bad parameters', () => {
-			expect(function () {
+			expect(() => {
 				new Repeated(null, null, null);
 			}).toThrow(/callback/);
 
-			expect(function () {
+			expect(() => {
 				new Repeated(() => {}, null, null);
 			}).toThrow(/time/);
 
-			expect(function () {
+			expect(() => {
 				new Repeated(() => {}, 0, null);
 			}).toThrow(/count/);
 
-			expect(function () {
+			expect(() => {
 				new Repeated(() => {}, 0, 1);
 			}).toThrow(/count/);
 
-			expect(function () {
+			expect(() => {
 				new Repeated(() => {}, 0, 2, 'blah');
 			}).toThrow(/after-callback/);
-		});
-	});
-
-	describe('Run', () => {
-		test('Should run as many times as set', done => {
-			let value = 0;
-
-			repeat(
-				() => {
-					value += 1;
-				},
-				25,
-				10,
-			);
-
-			wait(() => {
-				expect(value).toEqual(10);
-				done();
-			}, 500);
-		});
-
-		test('Should run until cancelled', done => {
-			let value = 0;
-
-			const repeated = repeat(
-				() => {
-					value += 1;
-				},
-				25,
-				10,
-			);
-
-			wait(() => {
-				repeated.stop();
-			}, 125);
-
-			wait(() => {
-				expect(value).toBeLessThan(10);
-				done();
-			}, 500);
 		});
 	});
 });
 
 describe('Timer, Waited', () => {
-	describe('Constructor', function () {
+	describe('Constructor', () => {
 		test('Should handle bad parameters', () => {
-			expect(function () {
+			expect(() => {
 				new Waited(null, null);
-			}, /callback/);
+			}).toThrow(/callback/);
 
-			expect(function () {
+			expect(() => {
 				new Waited(() => {}, null);
-			}, /time/);
+			}).toThrow(/time/);
 		});
 	});
 });
@@ -147,6 +107,7 @@ describe('Repeated', () => {
 	describe('Methods', () => {
 		test('Should be able to handle after-callbacks with proper finished-state', done => {
 			let canceledValue = 0;
+			let finishedStep = 0;
 			let finishedValue = 0;
 
 			const canceledTimer = repeat(
@@ -162,13 +123,15 @@ describe('Repeated', () => {
 			);
 
 			repeat(
-				() => {
+				index => {
+					finishedStep = index;
 					finishedValue += 1;
 				},
 				0,
 				10,
 				finished => {
 					expect(finished).toEqual(true);
+					expect(finishedStep).toEqual(9);
 					expect(finishedValue).toEqual(10);
 				},
 			);

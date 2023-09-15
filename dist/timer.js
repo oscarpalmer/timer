@@ -12,13 +12,6 @@ const callbacks = new WeakMap();
 const configuration = new WeakMap();
 const state = new WeakMap();
 const milliseconds = Math.round(1000 / 60);
-const request =
-	requestAnimationFrame ??
-	function (callback) {
-		return setTimeout?.(() => {
-			callback(Date.now());
-		}, milliseconds);
-	};
 function run(timed) {
 	const timedConfiguration = configuration.get(timed);
 	const timedCallbacks = callbacks.get(timed);
@@ -52,9 +45,9 @@ function run(timed) {
 				return;
 			}
 		}
-		timedState.frame = request(step);
+		timedState.frame = globalThis.requestAnimationFrame(step);
 	}
-	timedState.frame = request(step);
+	timedState.frame = globalThis.requestAnimationFrame(step);
 }
 class Timed {
 	get active() {
@@ -102,7 +95,6 @@ class Timed {
 		state.set(this, {
 			active: false,
 			finished: false,
-			frame: undefined,
 		});
 	}
 	restart() {
@@ -123,7 +115,7 @@ class Timed {
 		if (timedState.frame === undefined) {
 			return this;
 		}
-		(cancelAnimationFrame ?? clearTimeout)?.(timedState.frame);
+		globalThis.cancelAnimationFrame(timedState.frame);
 		timedCallbacks.after?.(this.finished);
 		timedState.frame = undefined;
 		return this;

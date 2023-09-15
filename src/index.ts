@@ -21,7 +21,7 @@ export type RepeatedCallback = (index: number) => void;
 type State = {
 	active: boolean;
 	finished: boolean;
-	frame?: DOMHighResTimeStamp;
+	frame?: number;
 };
 
 const callbacks = new WeakMap<Timed<never, never>, Callbacks>();
@@ -29,14 +29,6 @@ const configuration = new WeakMap<Timed<never, never>, Configuration>();
 const state = new WeakMap<Timed<never, never>, State>();
 
 const milliseconds = Math.round(1000 / 60);
-
-const request =
-	globalThis.requestAnimationFrame ??
-	function (callback) {
-		return setTimeout?.(() => {
-			callback(Date.now());
-		}, milliseconds);
-	};
 
 function run(timed: Timed<never, never>): void {
 	const timedConfiguration = configuration.get(timed)!;
@@ -52,7 +44,7 @@ function run(timed: Timed<never, never>): void {
 
 	let start;
 
-	function step(timestamp: DOMHighResTimeStamp) {
+	function step(timestamp: DOMHighResTimeStamp): void {
 		if (!timedState.active) {
 			return;
 		}
@@ -85,10 +77,10 @@ function run(timed: Timed<never, never>): void {
 			}
 		}
 
-		timedState.frame = request(step) as never;
+		timedState.frame = globalThis.requestAnimationFrame(step);
 	}
 
-	timedState.frame = request(step) as never;
+	timedState.frame = globalThis.requestAnimationFrame(step);
 }
 
 class Timed<Type, Callback> {
@@ -107,7 +99,7 @@ class Timed<Type, Callback> {
 	 * @param {AfterCallback=} afterCallback
 	 */
 	constructor(
-		callback: () => void | ((index: number) => void),
+		callback: Callback,
 		time: number,
 		count: number,
 		afterCallback?: AfterCallback,
@@ -144,7 +136,7 @@ class Timed<Type, Callback> {
 
 		callbacks.set(this as never, {
 			after: afterCallback,
-			default: callback,
+			default: callback as never,
 		});
 
 		configuration.set(this as never, {count, time});
@@ -152,7 +144,6 @@ class Timed<Type, Callback> {
 		state.set(this as never, {
 			active: false,
 			finished: false,
-			frame: undefined,
 		});
 	}
 
@@ -182,7 +173,7 @@ class Timed<Type, Callback> {
 			return this as never;
 		}
 
-		(cancelAnimationFrame ?? clearTimeout)?.(timedState.frame);
+		globalThis.cancelAnimationFrame(timedState.frame);
 
 		timedCallbacks.after?.(this.finished);
 

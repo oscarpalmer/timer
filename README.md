@@ -62,6 +62,16 @@ Both the nice helper methods and the class syntax create similar objects – `Wa
 
 ## Callbacks
 
+Callbacks for waited timers do not receive any arguments, but callbacks for repeated ones do:
+
+```typescript
+repeat(index => {
+	// 'index' is the current step
+	// starts at 0, goes up to a maximum of count - 1
+	// for this example: 0 → 9
+}, 0, 10);
+```
+
 When you create a repeated timer, you can also provide a fourth parameter to act as a callback to run when the timer stops, as below:
 
 ```typescript
