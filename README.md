@@ -8,8 +8,6 @@ A better solution for timeout- and interval-based timers.
 
 Timer is available on _npm_ as [`@oscarpalmer/timer`](https://www.npmjs.com/package/@oscarpalmer/timer) to be bundled with your awesome projects.
 
-If you don't need to bundle things, you can use the CDN-version and include a script in your proejcts right away, thanks to [jsDelivr](https://www.jsdelivr.com/package/npm/@oscarpalmer/timer) and  [UNPKG](https://unpkg.com/@oscarpalmer/timer).
-
 ## Getting started
 
 This is fairly lightweight package, so hopefully you'll be up and running in seconds :blush:
@@ -21,65 +19,62 @@ The timers can be called with nice helper methods, which also auto-starts the ti
 ```typescript
 import {repeat, wait} from '@oscarpalmer/timer';
 
-let waited = wait(callback, time);
-let repeated = repeat(callback, time, count);
+const waited = wait(waitedCallback);
+const repeated = repeat(repeatedCallback, 10);
 ```
 
-Or they can be created using class syntax, but without being auto-started:
+Or they can be created using the `new`-keyword, but without being auto-started:
 
 ```typescript
-import {Repeated, Waited} from '@oscarpalmer/timer';
+import {Timer} from '@oscarpalmer/timer';
 
-waited = new Waited(callback, time);
-repeated = new Repeated(callback, time, count);
+const waited = new Timer(waitedCallback);
+const repeated = new Timer(repeatedCallback, 10);
 ```
 
-### CDN & IIFE
+## Parameters
 
-If you're using Timer by including the file suffixed with `.iife.js` – or one of the CDN-versions mentioned above – you won't have to import any of the classes or methods.
+When creating a _Timer_, either with the new `new`-keyword or using the functions, you can configure the timer with a few parameters:
 
-Instead, just include a `script`-tag in your HTML linking to Timer and you can access Timer in other scripts, as below:
+|Parameter|Description|
+|--------:|:----------|
+|`callback`|Callback function to be invoked for each run that are __required__ for all timers.<br>For more information on callbacks, please read [the callbacks section](#callbacks).|
+|`count`|How many times the timer should run.<br>If no value is provided, it will default to `1` when using the `new`-keyword and the `wait`-method, but throws an error for the `repeat`-method.|
+|`time`|How many milliseconds between each invokations of the provided callback.<br>Defaults to `0`, which is not really _0_ milliseconds, but close enough :wink:|
+|`after`|A callback to run after the timer finishes, both when cancelled and completed.<br>If _count_ is greater than `1` and _after_ __is not__ `undefined`, a function is expected.|
 
-```javascript
-// With auto-start
-var waited = Timer.wait(callback, time);
-var repeated = Timer.repeat(callback, time, count);
+## Methods and properties
 
-// With manual start
-waited = new Timer.Waited(callback, time);
-repeated = new Timer.Repeated(callback, time, count);
-```
+An instance of _Timer_ also has a few helpful methods and properties:
 
-## Methods
-
-Both the nice helper methods and the class syntax create similar objects – `Waited` and `Repeated` – which share methods:
-
-|Method|Description|
-|-----:|:----------|
-|`start()`|Starts the timer: necessary when creating a timer using the class syntax _(e.g. `new Waited...`)_, but helpful when the timer needs to be started at other times, as well|
-|`stop()`|Stops the timer|
-|`restart()`|Restarts the timer|
+|Name|Type|Description|
+|---:|----|:----------|
+|`active`|_Property_|A `boolean` value to check if the timer is running|
+|`finished`|_Property_|A `boolean` value to check if the timer was able to finish|
+|`start()`|_Method_|Starts the timer.<br>Necessary when creating a timer using the class syntax _(e.g. `new Waited...`)_, but helpful when the timer needs to be started at other times, as well.|
+|`stop()`|_Method_|Stops the timer|
+|`restart()`|_Method_|Restarts the timer|
 
 ## Callbacks
 
-Callbacks for waited timers do not receive any arguments, but callbacks for repeated ones do:
+Callbacks for both waited and repeated timers receive one parameter:
 
 ```typescript
-repeat(index => {
+function callback(index) {
 	// 'index' is the current step
 	// starts at 0, goes up to a maximum of count - 1
 	// for this example: 0 → 9
-}, 0, 10);
+};
 ```
 
-When you create a repeated timer, you can also provide a fourth parameter to act as a callback to run when the timer stops, as below:
+When you create a repeated timer, you can also provide a callback to run when the timer stops, as below:
 
 ```typescript
 function after(finished: boolean) {
 	// Let's do something fun!
 }
 
-repeat(() => {}, 0, 10, after);
+repeat(() => {}, 10, after);
 ```
 
 The `finished`-parameter for the `after`-function can be used to determine if the timer was stopped manually, or if it was able to finish its work.

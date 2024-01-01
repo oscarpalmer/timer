@@ -3,31 +3,17 @@
 		"name": "Oscar Palmér",
 		"url": "https://oscarpalmer.se"
 	},
-	"browser": "dist/timer.iife.js",
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
-		"@happy-dom/global-registrator": "^11.0",
-		"@rollup/plugin-typescript": "^11.1",
+		"@biomejs/biome": "^1.4",
+		"@happy-dom/global-registrator": "^12.10",
 		"bun": "^1.0",
-		"prettier": "^3.0",
-		"rollup": "^3.29",
-		"typescript": "^5.2",
-		"xo": "^0.56"
+		"typescript": "^5.3"
 	},
-	"files": [
-		"dist",
-		"src",
-		"types"
-	],
-	"jsdelivr": "dist/timer.iife.js",
-	"keywords": [
-		"timer",
-		"setTimeout",
-		"setInterval",
-		"requestAnimationFrame"
-	],
+	"files": ["dist", "src", "types"],
+	"keywords": ["timer", "setTimeout", "setInterval", "requestAnimationFrame"],
 	"license": "MIT",
-	"main": "dist/timer.iife.js",
+	"main": "dist/timer.js",
 	"module": "dist/timer.js",
 	"name": "@oscarpalmer/timer",
 	"prettier": {
@@ -43,26 +29,13 @@
 		"url": "git+https://github.com/oscarpalmer/timer.git"
 	},
 	"scripts": {
-		"build": "npm run build:esm && npm run build:iife",
-		"build:esm": "rollup -c",
-		"build:iife": "rollup -c --environment ROLLUP_FORMAT:iife",
+		"build": "bun build ./src/index.ts --outfile ./dist/timer.js",
 		"test": "bun test --coverage",
-		"types": "tsc ./src/index.ts --outdir ./types --declaration --emitDeclarationOnly",
+		"types": "bunx tsc -p ./tsconfig.json",
 		"watch": "rollup -c -w",
 		"xo": "xo ./src/*.ts --env browser"
 	},
 	"type": "module",
 	"types": "src/index.d.ts",
-	"unpkg": "dist/timer.iife.js",
-	"version": "0.19.0",
-	"xo": {
-		"envs": [
-			"browser"
-		],
-		"prettier": true,
-		"rules": {
-			"import/extensions": "off",
-			"import/no-cycle": "off"
-		}
-	}
+	"version": "0.20.0"
 }

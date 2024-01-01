@@ -1,22 +1,17 @@
+export type AfterCallback = (finished: boolean) => void;
+
 type Callbacks = {
 	after: AfterCallback | undefined;
-	default: (index?: number) => void;
+	default: IndexedCallback;
 };
 
 type Configuration = {
+	callbacks: Callbacks;
 	count: number;
 	time: number;
 };
 
-/**
- * @param {boolean} finished Did the timer finish?
- */
-export type AfterCallback = (finished: boolean) => void;
-
-/**
- * @param {number} index The index of the current iteration
- */
-export type RepeatedCallback = (index: number) => void;
+type IndexedCallback = (index: number) => void;
 
 type State = {
 	active: boolean;
@@ -24,28 +19,23 @@ type State = {
 	frame?: number;
 };
 
-const callbacks = new WeakMap<Timed<never, never>, Callbacks>();
-const configuration = new WeakMap<Timed<never, never>, Configuration>();
-const state = new WeakMap<Timed<never, never>, State>();
-
 const milliseconds = Math.round(1000 / 60);
 
-function run(timed: Timed<never, never>): void {
-	const timedConfiguration = configuration.get(timed)!;
-	const timedCallbacks = callbacks.get(timed)!;
-	const timedState = state.get(timed)!;
+function run(timer: Timer): void {
+	// @ts-expect-error Keep private status, but allow access
+	const {_configuration, _state} = timer;
 
-	timedState.active = true;
-	timedState.finished = false;
+	_state.active = true;
+	_state.finished = false;
 
-	const isRepeated = timed instanceof Repeated;
+	const isRepeated = _configuration.count > 1;
 
 	let index = 0;
 
 	let start;
 
 	function step(timestamp: DOMHighResTimeStamp): void {
-		if (!timedState.active) {
+		if (!_state.active) {
 			return;
 		}
 
@@ -57,39 +47,42 @@ function run(timed: Timed<never, never>): void {
 		const elapsedMaximum = elapsed + milliseconds;
 
 		if (
-			elapsedMinimum < timedConfiguration.time &&
-			timedConfiguration.time < elapsedMaximum
+			elapsedMinimum < _configuration.time &&
+			_configuration.time < elapsedMaximum
 		) {
-			if (timedState.active) {
-				timedCallbacks.default(isRepeated ? index : undefined);
+			if (_state.active) {
+				_configuration.callbacks.default(index);
 			}
 
 			index += 1;
 
-			if (isRepeated && index < timedConfiguration.count) {
+			if (isRepeated && index < _configuration.count) {
 				start = undefined;
 			} else {
-				timedState.finished = true;
+				_state.finished = true;
 
-				timed.stop();
+				timer.stop();
 
 				return;
 			}
 		}
 
-		timedState.frame = globalThis.requestAnimationFrame(step);
+		_state.frame = requestAnimationFrame(step);
 	}
 
-	timedState.frame = globalThis.requestAnimationFrame(step);
+	_state.frame = requestAnimationFrame(step);
 }
 
-class Timed<Type, Callback> {
+export class Timer {
+	private declare readonly _configuration: Configuration;
+	private declare readonly _state: State;
+
 	get active(): boolean {
-		return state.get(this as never)?.active ?? false;
+		return this._state.active;
 	}
 
 	get finished(): boolean {
-		return !this.active && (state.get(this as never)?.finished ?? false);
+		return this._state.finished;
 	}
 
 	/**
@@ -99,33 +92,33 @@ class Timed<Type, Callback> {
 	 * @param {AfterCallback=} afterCallback
 	 */
 	constructor(
-		callback: Callback,
-		time: number,
-		count: number,
+		callback: IndexedCallback,
+		time?: number,
+		count?: number,
 		afterCallback?: AfterCallback,
 	) {
-		const isRepeated = this instanceof Repeated;
-
-		const type = isRepeated ? 'repeated' : 'waited';
-
 		if (typeof callback !== 'function') {
-			throw new TypeError(`A ${type} timer must have a callback function`);
+			throw new TypeError('A timer must have a callback function');
 		}
 
-		if (typeof time !== 'number' || time < 0) {
+		const actualTime = typeof time === 'number' ? time : 0;
+
+		if (actualTime < 0) {
 			throw new TypeError(
-				`A ${type} timer must have a non-negative number as its time`,
+				'A timer must have a non-negative number as its time',
 			);
 		}
 
-		if (isRepeated && (typeof count !== 'number' || count < 2)) {
+		const actualCount = typeof count === 'number' ? count : 1;
+
+		if (actualCount < 1) {
 			throw new TypeError(
-				'A repeated timer must have a number above 1 as its repeat count',
+				'A timer must have a number greater than or equal to 1 as its run count',
 			);
 		}
 
 		if (
-			isRepeated &&
+			actualCount > 1 &&
 			afterCallback !== undefined &&
 			typeof afterCallback !== 'function'
 		) {
@@ -134,97 +127,103 @@ class Timed<Type, Callback> {
 			);
 		}
 
-		callbacks.set(this as never, {
-			after: afterCallback,
-			default: callback as never,
+		Object.defineProperty(this, '_configuration', {
+			value: {
+				callbacks: {
+					after: afterCallback,
+					default: callback,
+				},
+				count: actualCount,
+				time: actualTime,
+			},
 		});
 
-		configuration.set(this as never, {count, time});
-
-		state.set(this as never, {
-			active: false,
-			finished: false,
+		Object.defineProperty(this, '_state', {
+			value: {
+				active: false,
+				finished: false,
+			},
 		});
 	}
 
-	restart(): Type {
+	restart(): Timer {
 		this.stop();
 
-		run(this as never);
+		run(this);
 
-		return this as never;
+		return this;
 	}
 
-	start(): Type {
-		if (!this.active) {
-			run(this as never);
+	start(): Timer {
+		if (!this._state.active) {
+			run(this);
 		}
 
-		return this as never;
+		return this;
 	}
 
-	stop(): Type {
-		const timedCallbacks = callbacks.get(this as never)!;
-		const timedState = state.get(this as never)!;
+	stop(): Timer {
+		this._state.active = false;
 
-		timedState.active = false;
-
-		if (timedState.frame === undefined) {
-			return this as never;
+		if (this._state.frame === undefined) {
+			return this;
 		}
 
-		globalThis.cancelAnimationFrame(timedState.frame);
+		cancelAnimationFrame(this._state.frame);
 
-		timedCallbacks.after?.(this.finished);
+		this._configuration.callbacks.after?.(this._state.finished);
 
-		timedState.frame = undefined;
+		this._state.frame = undefined;
 
-		return this as never;
-	}
-}
-
-/**
- * A timer that waits and runs repeatedly
- */
-export class Repeated extends Timed<Repeated, RepeatedCallback> {}
-
-/**
- * A timer that waits and runs once
- */
-export class Waited extends Timed<Waited, () => void> {
-	/**
-	 * Creates a new waited timer
-	 * @param {() => void} callback
-	 * @param {number} time
-	 */
-	constructor(callback: () => void, time: number) {
-		super(callback, time, 1);
+		return this;
 	}
 }
 
 /**
  * Creates and starts a new repeated timer
- * @param {RepeatedCallback} callback
- * @param {number} time
- * @param {number} count
- * @param {AfterCallback=} afterCallback
- * @return {Repeated}
  */
+export function repeat(callback: IndexedCallback, count: number): Timer;
 export function repeat(
-	callback: RepeatedCallback,
-	time: number,
+	callback: IndexedCallback,
 	count: number,
-	afterCallback?: AfterCallback,
-): Repeated {
-	return new Repeated(callback as never, time, count, afterCallback).start();
+	afterCallback: AfterCallback,
+): Timer;
+export function repeat(
+	callback: IndexedCallback,
+	count: number,
+	time: number,
+): Timer;
+export function repeat(
+	callback: IndexedCallback,
+	count: number,
+	time: number,
+	afterCallback: AfterCallback,
+): Timer;
+export function repeat(
+	callback: IndexedCallback,
+	count: number,
+	afterOrTime?: number | AfterCallback,
+	after?: AfterCallback,
+): Timer {
+	if (typeof count !== 'number' || count < 2) {
+		throw new TypeError(
+			'A repeated timer must have a number greater than or equal to 2 as its run count',
+		);
+	}
+
+	const afterOrTimeIsFunction = typeof afterOrTime === 'function';
+
+	return new Timer(
+		callback,
+		afterOrTimeIsFunction ? 0 : afterOrTime,
+		count,
+		afterOrTimeIsFunction ? afterOrTime : after,
+	).start();
 }
 
 /**
  * Creates and starts a new waited timer
- * @param {() => void} callback
- * @param {number} time
- * @return {Waited}
  */
-export function wait(callback: () => void, time: number): Waited {
-	return new Waited(callback, time).start();
+export function wait(callback: IndexedCallback, time?: number): Timer {
+	return new Timer(callback, time).start();
 }
