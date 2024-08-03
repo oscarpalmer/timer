@@ -20,7 +20,7 @@
 			"bun": "./src/index.ts",
 			"import": {
 				"types": "./types/index.d.ts",
-				"default": "./dist/timer.mjs"
+				"default": "./dist/index.mjs"
 			},
 			"require": {
 				"types": "./types/index.d.cts",
@@ -46,9 +46,9 @@
 		"types": "bun run types:cjs && bun run types:esm",
 		"types:cjs": "bunx dts-bundle-generator --out-file ./types/index.d.cts --external-inlines '@oscarpalmer/atoms' --no-check --silent ./src/index.ts",
 		"types:esm": "bunx tsc -p ./tsconfig.json",
-		"watch": "bun build ./src/index.ts --outfile ./dist/timer.js --watch"
+		"watch": "bun build ./src/index.ts --outfile ./dist/index.js --watch"
 	},
 	"type": "module",
 	"types": "types/index.d.cts",
-	"version": "0.22.0"
+	"version": "0.22.1"
 }
