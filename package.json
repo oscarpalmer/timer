@@ -17,10 +17,15 @@
 	},
 	"exports": {
 		".": {
-			"types": "./types/index.d.cts",
 			"bun": "./src/index.ts",
-			"import": "./dist/timer.mjs",
-			"require": "./dist/timer.js"
+			"import": {
+				"types": "./types/index.d.ts",
+				"default": "./dist/timer.mjs"
+			},
+			"require": {
+				"types": "./types/index.d.cts",
+				"default": "./dist/timer.js"
+			}
 		}
 	},
 	"files": ["dist", "src", "types"],
