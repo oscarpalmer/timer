@@ -24,24 +24,23 @@
 			},
 			"require": {
 				"types": "./types/index.d.cts",
-				"default": "./dist/timer.js"
+				"default": "./dist/index.js"
 			}
 		}
 	},
 	"files": ["dist", "src", "types"],
 	"keywords": ["timer", "setTimeout", "setInterval", "requestAnimationFrame"],
 	"license": "MIT",
-	"main": "dist/timer.js",
-	"module": "dist/timer.mjs",
+	"main": "dist/index.js",
+	"module": "dist/index.mjs",
 	"name": "@oscarpalmer/timer",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/oscarpalmer/timer.git"
 	},
 	"scripts": {
-		"build": "bun run clean && bun run build:cjs && bun run build:esm && bun run types",
-		"build:cjs": "bun build ./src/index.ts --outfile ./dist/timer.js",
-		"build:esm": "bun build ./src/index.ts --external '*' --outfile ./dist/timer.mjs",
+		"build": "bun run clean && bun run build:js && bun run types",
+		"build:js": "bunx bun ./.bun.ts && bunx bun ./.bun.ts --mjs",
 		"clean": "rm -rf ./dist && rm -rf ./types && rm -f ./tsconfig.tsbuildinfo",
 		"test": "bun test",
 		"types": "bun run types:cjs && bun run types:esm",
@@ -51,5 +50,5 @@
 	},
 	"type": "module",
 	"types": "types/index.d.cts",
-	"version": "0.21.1"
+	"version": "0.22.0"
 }

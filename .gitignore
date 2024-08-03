@@ -1,8 +1,9 @@
 node_modules
 www
 
+dist/**/*
+
 *.d.cts
-*.mjs
 *.tsbuildinfo
 
-.DS_Store
+!dist/index.js
