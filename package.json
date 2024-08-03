@@ -3,39 +3,48 @@
 		"name": "Oscar Palmér",
 		"url": "https://oscarpalmer.se"
 	},
+	"dependencies": {
+		"@oscarpalmer/atoms": "0.69.0"
+	},
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
-		"@biomejs/biome": "^1.4",
-		"@happy-dom/global-registrator": "^12.10",
-		"bun": "^1.0",
-		"typescript": "^5.3"
+		"@biomejs/biome": "^1.8.3",
+		"@happy-dom/global-registrator": "^12.10.3",
+		"@types/bun": "^1.1.6",
+		"bun": "^1.1.21",
+		"dts-bundle-generator": "9.5.1",
+		"typescript": "^5.5.4"
+	},
+	"exports": {
+		".": {
+			"types": "./types/index.d.cts",
+			"bun": "./src/index.ts",
+			"import": "./dist/timer.mjs",
+			"require": "./dist/timer.js"
+		}
 	},
 	"files": ["dist", "src", "types"],
 	"keywords": ["timer", "setTimeout", "setInterval", "requestAnimationFrame"],
 	"license": "MIT",
 	"main": "dist/timer.js",
-	"module": "dist/timer.js",
+	"module": "dist/timer.mjs",
 	"name": "@oscarpalmer/timer",
-	"prettier": {
-		"arrowParens": "avoid",
-		"bracketSpacing": false,
-		"singleQuote": true,
-		"switchIndent": true,
-		"trailingComma": "all",
-		"useTabs": true
-	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/oscarpalmer/timer.git"
 	},
 	"scripts": {
-		"build": "bun build ./src/index.ts --outfile ./dist/timer.js",
-		"test": "bun test --coverage",
-		"types": "bunx tsc -p ./tsconfig.json",
-		"watch": "rollup -c -w",
-		"xo": "xo ./src/*.ts --env browser"
+		"build": "bun run clean && bun run build:cjs && bun run build:esm && bun run types",
+		"build:cjs": "bun build ./src/index.ts --outfile ./dist/timer.js",
+		"build:esm": "bun build ./src/index.ts --external '*' --outfile ./dist/timer.mjs",
+		"clean": "rm -rf ./dist && rm -rf ./types && rm -f ./tsconfig.tsbuildinfo",
+		"test": "bun test",
+		"types": "bun run types:cjs && bun run types:esm",
+		"types:cjs": "bunx dts-bundle-generator --out-file ./types/index.d.cts --external-inlines '@oscarpalmer/atoms' --no-check --silent ./src/index.ts",
+		"types:esm": "bunx tsc -p ./tsconfig.json",
+		"watch": "bun build ./src/index.ts --outfile ./dist/timer.js --watch"
 	},
 	"type": "module",
-	"types": "src/index.d.ts",
+	"types": "types/index.d.cts",
 	"version": "0.20.0"
 }

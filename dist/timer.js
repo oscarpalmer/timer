@@ -1,111 +1,292 @@
-// src/index.ts
-var run = function(timer) {
-  const { _configuration, _state } = timer;
-  _state.active = true;
-  _state.finished = false;
-  const isRepeated = _configuration.count > 1;
-  let index = 0;
+// node_modules/@oscarpalmer/atoms/dist/js/function.mjs
+function noop() {
+}
+
+// src/constants.ts
+var activeTimers = new Set;
+var hiddenTimers = new Set;
+var milliseconds = 1000 / 60;
+
+// src/global.ts
+if (globalThis._oscarpalmer_timers == null) {
+  Object.defineProperty(globalThis, "_oscarpalmer_timers", {
+    get() {
+      return globalThis._oscarpalmer_timer_debug ? [...activeTimers] : [];
+    }
+  });
+}
+
+// src/functions.ts
+function getOptions(options, isRepeated) {
+  return {
+    afterCallback: options.afterCallback,
+    count: getValueOrDefault(options.count, isRepeated ? Number.POSITIVE_INFINITY : 1),
+    errorCallback: options.errorCallback,
+    interval: getValueOrDefault(options.interval, milliseconds, milliseconds),
+    timeout: getValueOrDefault(options.timeout, isRepeated ? Number.POSITIVE_INFINITY : 30000)
+  };
+}
+function getValueOrDefault(value, defaultValue, minimum) {
+  return typeof value === "number" && value > (minimum ?? 0) ? value : defaultValue;
+}
+function work(type, timer, state, options) {
+  if (["continue", "start"].includes(type) && state.active || ["pause", "stop"].includes(type) && !state.active) {
+    return timer;
+  }
+  const { count, interval, timeout } = options;
+  const { isRepeated, minimum } = state;
+  if (["pause", "restart", "stop"].includes(type)) {
+    const isStop = type === "stop";
+    activeTimers.delete(timer);
+    cancelAnimationFrame(state.frame);
+    if (isStop) {
+      options.afterCallback?.(false);
+    }
+    state.active = false;
+    state.frame = undefined;
+    state.paused = !isStop;
+    if (isStop) {
+      state.elapsed = undefined;
+      state.index = undefined;
+    }
+    return type === "restart" ? work("start", timer, state, options) : timer;
+  }
+  state.active = true;
+  state.paused = false;
+  const elapsed = type === "continue" ? +(state.elapsed ?? 0) : 0;
+  let index = type === "continue" ? +(state.index ?? 0) : 0;
+  state.elapsed = elapsed;
+  state.index = index;
+  const total = (count === Number.POSITIVE_INFINITY ? Number.POSITIVE_INFINITY : (count - index) * (interval > 0 ? interval : milliseconds)) - elapsed;
+  let current;
   let start;
+  function finish(finished, error) {
+    activeTimers.delete(timer);
+    state.active = false;
+    state.elapsed = undefined;
+    state.frame = undefined;
+    state.index = undefined;
+    if (error) {
+      options.errorCallback?.();
+    }
+    options.afterCallback?.(finished);
+  }
   function step(timestamp) {
-    if (!_state.active) {
+    if (!state.active) {
       return;
     }
+    current ??= timestamp;
     start ??= timestamp;
-    const elapsed = timestamp - start;
-    const elapsedMinimum = elapsed - milliseconds;
-    const elapsedMaximum = elapsed + milliseconds;
-    if (elapsedMinimum < _configuration.time && _configuration.time < elapsedMaximum) {
-      if (_state.active) {
-        _configuration.callbacks.default(index);
+    const time = timestamp - current;
+    state.elapsed = elapsed + (current - start);
+    const finished = time - elapsed >= total;
+    if (timestamp - start >= timeout - elapsed) {
+      finish(finished, !finished);
+      return;
+    }
+    if (finished || time >= minimum) {
+      if (state.active) {
+        state.callback(isRepeated ? index : undefined);
       }
       index += 1;
-      if (isRepeated && index < _configuration.count) {
-        start = undefined;
+      state.index = index;
+      if (!finished && index < count) {
+        current = null;
       } else {
-        _state.finished = true;
-        timer.stop();
+        finish(true, false);
         return;
       }
     }
-    _state.frame = requestAnimationFrame(step);
+    state.frame = requestAnimationFrame(step);
   }
-  _state.frame = requestAnimationFrame(step);
-};
-function repeat(callback, count, afterOrTime, after) {
-  if (typeof count !== "number" || count < 2) {
-    throw new TypeError("A repeated timer must have a number greater than or equal to 2 as its run count");
-  }
-  const afterOrTimeIsFunction = typeof afterOrTime === "function";
-  return new Timer(callback, afterOrTimeIsFunction ? 0 : afterOrTime, count, afterOrTimeIsFunction ? afterOrTime : after).start();
+  activeTimers.add(timer);
+  state.frame = requestAnimationFrame(step);
+  return timer;
 }
-function wait(callback, time) {
-  return new Timer(callback, time).start();
-}
-var milliseconds = Math.round(16.666666666666668);
 
-class Timer {
+// src/timer.ts
+function repeat(callback, options) {
+  return timer("repeat", callback, options ?? {}, true);
+}
+function timer(type, callback, partial, start) {
+  const isRepeated = type === "repeat";
+  const options = getOptions(partial, isRepeated);
+  const instance = new Timer(type, {
+    callback,
+    isRepeated,
+    active: false,
+    minimum: options.interval - options.interval % milliseconds / 2,
+    paused: false,
+    trace: new TimerTrace
+  }, options);
+  if (start) {
+    instance.start();
+  }
+  return instance;
+}
+function wait(callback, options) {
+  return timer("wait", callback, options == null || typeof options === "number" ? {
+    interval: options
+  } : options, true);
+}
+
+class BasicTimer {
+  constructor(type, state) {
+    this.$timer = type;
+    this.state = state;
+  }
+}
+
+class Timer extends BasicTimer {
   get active() {
-    return this._state.active;
+    return this.state.active;
   }
-  get finished() {
-    return this._state.finished;
+  get paused() {
+    return this.state.paused;
   }
-  constructor(callback, time, count, afterCallback) {
-    if (typeof callback !== "function") {
-      throw new TypeError("A timer must have a callback function");
-    }
-    const actualTime = typeof time === "number" ? time : 0;
-    if (actualTime < 0) {
-      throw new TypeError("A timer must have a non-negative number as its time");
-    }
-    const actualCount = typeof count === "number" ? count : 1;
-    if (actualCount < 1) {
-      throw new TypeError("A timer must have a number greater than or equal to 1 as its run count");
-    }
-    if (actualCount > 1 && afterCallback !== undefined && typeof afterCallback !== "function") {
-      throw new TypeError("A repeated timer's after-callback must be a function");
-    }
-    Object.defineProperty(this, "_configuration", {
-      value: {
-        callbacks: {
-          after: afterCallback,
-          default: callback
-        },
-        count: actualCount,
-        time: actualTime
-      }
-    });
-    Object.defineProperty(this, "_state", {
-      value: {
-        active: false,
-        finished: false
-      }
-    });
+  get trace() {
+    return globalThis._oscarpalmer_timer_debug ? this.state.trace : undefined;
+  }
+  constructor(type, state, options) {
+    super(type, state);
+    this.options = options;
+  }
+  continue() {
+    return work("continue", this, this.state, this.options);
+  }
+  pause() {
+    return work("pause", this, this.state, this.options);
   }
   restart() {
-    this.stop();
-    run(this);
-    return this;
+    return work("restart", this, this.state, this.options);
   }
   start() {
-    if (!this._state.active) {
-      run(this);
+    return work("start", this, this.state, this.options);
+  }
+  stop() {
+    return work("stop", this, this.state, this.options);
+  }
+}
+
+class TimerTrace extends Error {
+  constructor() {
+    super();
+    this.name = "TimerTrace";
+  }
+}
+
+// src/index.ts
+function delay(time, timeout) {
+  return new Promise((resolve, reject) => {
+    wait(resolve ?? noop, {
+      timeout,
+      errorCallback: reject ?? noop,
+      interval: time
+    });
+  });
+}
+
+// src/is.ts
+function is(pattern, value) {
+  return pattern.test(value?.$timer);
+}
+function isRepeated(value) {
+  return is(/^repeat$/, value);
+}
+function isTimer(value) {
+  return is(/^repeat|wait$/, value);
+}
+function isWaited(value) {
+  return is(/^wait$/, value);
+}
+function isWhen(value) {
+  return is(/^when$/, value) && typeof value.then === "function";
+}
+// src/when.ts
+function when(condition, options) {
+  const repeated = timer("repeat", () => {
+    if (condition()) {
+      repeated.stop();
+      state.resolver?.();
     }
+  }, {
+    afterCallback() {
+      if (!repeated.paused) {
+        if (condition()) {
+          state.resolver?.();
+        } else {
+          state.rejecter?.();
+        }
+      }
+    },
+    errorCallback() {
+      state.rejecter?.();
+    },
+    count: options?.count,
+    interval: options?.interval,
+    timeout: options?.timeout
+  }, false);
+  const state = {};
+  state.promise = new Promise((resolve, reject) => {
+    state.resolver = resolve;
+    state.rejecter = reject;
+  });
+  state.timer = repeated;
+  return new When(state);
+}
+
+class When extends BasicTimer {
+  get active() {
+    return this.state.timer.active;
+  }
+  get paused() {
+    return this.state.timer.paused;
+  }
+  constructor(state) {
+    super("when", state);
+  }
+  continue() {
+    this.state.timer.continue();
+    return this;
+  }
+  pause() {
+    this.state.timer.pause();
     return this;
   }
   stop() {
-    this._state.active = false;
-    if (this._state.frame === undefined) {
-      return this;
+    if (this.state.timer.active) {
+      this.state.timer.stop();
+      this.state.rejecter?.();
     }
-    cancelAnimationFrame(this._state.frame);
-    this._configuration.callbacks.after?.(this._state.finished);
-    this._state.frame = undefined;
     return this;
   }
+  then(resolve, reject) {
+    this.state.timer.start();
+    return this.state.promise.then(resolve ?? noop, reject ?? noop);
+  }
 }
+
+// src/index.ts
+document.addEventListener("visibilitychange", () => {
+  if (document.hidden) {
+    for (const timer4 of activeTimers) {
+      hiddenTimers.add(timer4);
+      timer4.pause();
+    }
+  } else {
+    for (const timer4 of hiddenTimers) {
+      timer4.continue();
+    }
+    hiddenTimers.clear();
+  }
+});
 export {
+  when,
   wait,
   repeat,
-  Timer
+  isWhen,
+  isWaited,
+  isTimer,
+  isRepeated,
+  delay
 };

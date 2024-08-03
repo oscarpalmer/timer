@@ -1,30 +1,8 @@
-export type AfterCallback = (finished: boolean) => void;
-type IndexedCallback = (index: number) => void;
-export declare class Timer {
-    private readonly _configuration;
-    private readonly _state;
-    get active(): boolean;
-    get finished(): boolean;
-    /**
-     * @param {Callback} callback
-     * @param {number} time
-     * @param {number} count
-     * @param {AfterCallback=} afterCallback
-     */
-    constructor(callback: IndexedCallback, time?: number, count?: number, afterCallback?: AfterCallback);
-    restart(): Timer;
-    start(): Timer;
-    stop(): Timer;
-}
+import './global';
 /**
- * Creates and starts a new repeated timer
+ * Creates a delayed promise that resolves after a certain amount of time _(or rejects when timed out)_
  */
-export declare function repeat(callback: IndexedCallback, count: number): Timer;
-export declare function repeat(callback: IndexedCallback, count: number, afterCallback: AfterCallback): Timer;
-export declare function repeat(callback: IndexedCallback, count: number, time: number): Timer;
-export declare function repeat(callback: IndexedCallback, count: number, time: number, afterCallback: AfterCallback): Timer;
-/**
- * Creates and starts a new waited timer
- */
-export declare function wait(callback: IndexedCallback, time?: number): Timer;
-export {};
+export declare function delay(time: number, timeout?: number): Promise<void>;
+export { isRepeated, isTimer, isWaited, isWhen } from './is';
+export { repeat, wait, type Timer } from './timer';
+export { when, type When } from './when';
