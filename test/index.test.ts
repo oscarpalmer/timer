@@ -81,9 +81,13 @@ test('timer: pause & continue', done => {
 
 	wait(
 		() => {
+			expect(timer.paused).toBe(false);
+
 			timer.pause();
 
 			wait(() => {
+				expect(timer.paused).toBe(true);
+
 				timer.continue();
 
 				wait(() => {
@@ -147,15 +151,21 @@ test('when: pause & continue', done => {
 	});
 
 	what.then(() => {
+		expect(what.active).toBe(false);
 		expect(finished).toBe(true);
 		done();
 	});
 
 	wait(
 		() => {
+			expect(what.active).toBe(true);
+			expect(what.paused).toBe(false);
+
 			what.pause();
 
 			wait(() => {
+				expect(what.paused).toBe(true);
+
 				what.continue();
 
 				wait(() => {
@@ -265,17 +275,19 @@ test('is', done => {
 });
 
 test('debugging', done => {
-	wait(() => {
+	const timed = wait(() => {
 		// ?
 	}, 1000);
 
 	wait(() => {
 		expect(globalThis._oscarpalmer_timers).toBeArrayOfSize(0);
+		expect(timed.trace).toBeUndefined();
 
 		globalThis._oscarpalmer_timer_debug = true;
 
 		wait(() => {
 			expect(globalThis._oscarpalmer_timers).toBeArrayOfSize(2);
+			expect(timed.trace).not.toBeUndefined();
 
 			globalThis._oscarpalmer_timer_debug = false;
 

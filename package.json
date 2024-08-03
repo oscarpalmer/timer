@@ -9,7 +9,7 @@
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
 		"@biomejs/biome": "^1.8.3",
-		"@happy-dom/global-registrator": "^12.10.3",
+		"@happy-dom/global-registrator": "^14.12.3",
 		"@types/bun": "^1.1.6",
 		"bun": "^1.1.21",
 		"dts-bundle-generator": "9.5.1",
@@ -46,5 +46,5 @@
 	},
 	"type": "module",
 	"types": "types/index.d.cts",
-	"version": "0.20.0"
+	"version": "0.21.0"
 }
