@@ -2,12 +2,18 @@ import type { WhenOptions, WhenState } from './models';
 import { BasicTimer } from './timer';
 export declare class When extends BasicTimer<WhenState> {
     get active(): boolean;
+    get destroyed(): boolean;
     get paused(): boolean;
+    get trace(): import("./models").TimerTrace | undefined;
     constructor(state: WhenState);
     /**
      * Continues the timer _(if it was paused)_
      */
     continue(): When;
+    /**
+     * Destroys the timer _
+     */
+    destroy(): void;
     /**
      * Pauses the timer _(if it was running)_
      */

@@ -52,6 +52,7 @@ export type TimerOptions = {} & RepeatOptions;
 export type TimerState = {
 	active: boolean;
 	callback: AnyCallback;
+	destroyed: boolean;
 	count?: number;
 	elapsed?: number;
 	frame?: number;
@@ -59,8 +60,16 @@ export type TimerState = {
 	isRepeated: boolean;
 	minimum: number;
 	paused: boolean;
-	trace: unknown;
+	trace: TimerTrace;
 };
+
+export class TimerTrace extends Error {
+	constructor() {
+		super();
+
+		this.name = 'TimerTrace';
+	}
+}
 
 export type WaitOptions = {} & BaseOptions & OptionsWithError;
 
@@ -70,6 +79,7 @@ export type WhenState = {
 	promise: Promise<void>;
 	rejecter?: () => void;
 	resolver?: () => void;
+	started: boolean;
 	timer: Timer;
 };
 

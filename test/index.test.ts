@@ -103,6 +103,7 @@ test('timer: pause & continue', done => {
 });
 
 test('when', done => {
+	let repeated = false;
 	let stopped = false;
 	let value = 0;
 
@@ -117,6 +118,7 @@ test('when', done => {
 	const what = when(
 		() => {
 			expect(what.active).toBe(true);
+			expect(what.trace).toBeUndefined();
 
 			return value > 1;
 		},
@@ -133,9 +135,14 @@ test('when', done => {
 		stopped = true;
 	});
 
+	what.then(null, () => {
+		repeated = true;
+	});
+
 	when(() => value > 1, {
 		timeout: 250,
 	}).then(null, () => {
+		expect(repeated).toBe(true);
 		expect(stopped).toBe(true);
 		expect(value).toEqual(1);
 		done();
@@ -300,10 +307,56 @@ test('debugging', done => {
 	});
 });
 
-test('delay', async () => {
+test('delay', async done => {
+	let timeout = false;
+
 	const then = Date.now();
 
-	await delay(1000);
+	await delay(500);
 
+	expect(Math.abs(Date.now() - then - 500)).toBeLessThan(17);
+
+	await delay(1000, 500).then(null, () => {
+		timeout = true;
+	});
+
+	expect(timeout).toBe(true);
 	expect(Math.abs(Date.now() - then - 1000)).toBeLessThan(17);
+
+	done();
+});
+
+test('destroy', done => {
+	let timed = 0;
+	let whened = 0;
+
+	const timer = wait(() => {
+		timed += 1;
+	}, 125);
+
+	const what = when(() => timed > 0);
+
+	what.then(
+		() => {
+			whened += 1;
+		},
+		() => {
+			whened -= 1;
+		},
+	);
+
+	wait(() => {
+		timer.destroy();
+		what.destroy();
+
+		wait(() => {
+			expect(timed).toEqual(0);
+			expect(whened).toEqual(-1);
+
+			expect(timer.destroyed).toBe(true);
+			expect(what.destroyed).toBe(true);
+
+			done();
+		});
+	});
 });

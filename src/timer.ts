@@ -1,12 +1,13 @@
 import {milliseconds} from './constants';
 import {getOptions, work} from './functions';
-import type {
-	AnyCallback,
-	IndexedCallback,
-	RepeatOptions,
-	TimerOptions,
-	TimerState,
-	WaitOptions,
+import {
+	TimerTrace,
+	type AnyCallback,
+	type IndexedCallback,
+	type RepeatOptions,
+	type TimerOptions,
+	type TimerState,
+	type WaitOptions,
 } from './models';
 
 export abstract class BasicTimer<State> {
@@ -24,9 +25,19 @@ export abstract class BasicTimer<State> {
 	abstract readonly active: boolean;
 
 	/**
+	 * Is the timer destroyed?
+	 */
+	abstract readonly destroyed: boolean;
+
+	/**
 	 * Is the timer paused?
 	 */
 	abstract readonly paused: boolean;
+
+	/**
+	 * Gets the traced location of the timer
+	 */
+	abstract readonly trace: TimerTrace | undefined;
 }
 
 /**
@@ -39,13 +50,14 @@ export class Timer extends BasicTimer<TimerState> {
 		return this.state.active;
 	}
 
+	get destroyed() {
+		return this.state.destroyed;
+	}
+
 	get paused() {
 		return this.state.paused;
 	}
 
-	/**
-	 * Gets the traced location of the timer
-	 */
 	get trace() {
 		return globalThis._oscarpalmer_timer_debug ? this.state.trace : undefined;
 	}
@@ -65,6 +77,23 @@ export class Timer extends BasicTimer<TimerState> {
 	 */
 	continue(): Timer {
 		return work('continue', this, this.state, this.options);
+	}
+
+	/**
+	 * Destroys the timer _(after stopping it, if it was running)_
+	 */
+	destroy(): void {
+		if (!this.state.destroyed) {
+			this.state.destroyed = true;
+
+			this.stop();
+
+			this.options.afterCallback = undefined;
+			this.options.errorCallback = undefined;
+
+			this.state.callback = undefined as never;
+			this.state.trace = undefined as never;
+		}
 	}
 
 	/**
@@ -93,14 +122,6 @@ export class Timer extends BasicTimer<TimerState> {
 	 */
 	stop(): Timer {
 		return work('stop', this, this.state, this.options);
-	}
-}
-
-class TimerTrace extends Error {
-	constructor() {
-		super();
-
-		this.name = 'TimerTrace';
 	}
 }
 
@@ -135,6 +156,7 @@ export function timer(
 			callback,
 			isRepeated,
 			active: false,
+			destroyed: false,
 			minimum: options.interval - (options.interval % milliseconds) / 2,
 			paused: false,
 			trace: new TimerTrace(),

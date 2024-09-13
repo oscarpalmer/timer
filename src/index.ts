@@ -8,11 +8,22 @@ import {wait} from './timer';
  */
 export function delay(time: number, timeout?: number): Promise<void> {
 	return new Promise((resolve, reject) => {
-		wait(resolve ?? noop, {
-			timeout,
-			errorCallback: reject ?? noop,
-			interval: time,
-		});
+		const delayed = wait(
+			() => {
+				delayed.destroy();
+
+				(resolve ?? noop)();
+			},
+			{
+				timeout,
+				errorCallback: () => {
+					delayed.destroy();
+
+					(reject ?? noop)();
+				},
+				interval: time,
+			},
+		);
 	});
 }
 
@@ -34,4 +45,3 @@ document.addEventListener('visibilitychange', () => {
 export {isRepeated, isTimer, isWaited, isWhen} from './is';
 export {repeat, wait, type Timer} from './timer';
 export {when, type When} from './when';
-

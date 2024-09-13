@@ -1,6 +1,21 @@
-import {activeTimers, milliseconds} from './constants';
-import type {TimerOptions, TimerState, WorkType} from './models';
+import {
+	activeTimers,
+	beginTypes,
+	endOrRestartTypes,
+	endTypes,
+	milliseconds,
+} from './constants';
+import type {TimerOptions, TimerState, WhenState, WorkType} from './models';
 import type {Timer} from './timer';
+
+export function destroyWhen(state: WhenState): void {
+	state.timer?.destroy();
+
+	state.promise = undefined as never;
+	state.rejecter = undefined;
+	state.resolver = undefined;
+	state.timer = undefined as never;
+}
 
 export function getOptions(
 	options: Partial<TimerOptions>,
@@ -38,8 +53,9 @@ export function work(
 	options: TimerOptions,
 ): Timer {
 	if (
-		(['continue', 'start'].includes(type) && state.active) ||
-		(['pause', 'stop'].includes(type) && !state.active)
+		(state.destroyed && type !== 'stop') ||
+		(beginTypes.has(type) && state.active) ||
+		(endTypes.has(type) && !state.active)
 	) {
 		return timer;
 	}
@@ -47,7 +63,7 @@ export function work(
 	const {count, interval, timeout} = options;
 	const {isRepeated, minimum} = state;
 
-	if (['pause', 'restart', 'stop'].includes(type)) {
+	if (endOrRestartTypes.has(type)) {
 		const isStop = type === 'stop';
 
 		activeTimers.delete(timer);

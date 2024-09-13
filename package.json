@@ -8,12 +8,12 @@
 	},
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
-		"@biomejs/biome": "^1.8.3",
-		"@happy-dom/global-registrator": "^14.12.3",
-		"@types/bun": "^1.1.6",
-		"bun": "^1.1.21",
+		"@biomejs/biome": "^1.9.0",
+		"@happy-dom/global-registrator": "^15.7.4",
+		"@types/bun": "^1.1.9",
+		"bun": "^1.1.27",
 		"dts-bundle-generator": "9.5.1",
-		"typescript": "^5.5.4"
+		"typescript": "^5.6.2"
 	},
 	"exports": {
 		".": {
@@ -50,5 +50,5 @@
 	},
 	"type": "module",
 	"types": "types/index.d.cts",
-	"version": "0.22.1"
+	"version": "0.23.0"
 }

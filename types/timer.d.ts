@@ -1,4 +1,4 @@
-import type { AnyCallback, IndexedCallback, RepeatOptions, TimerOptions, TimerState, WaitOptions } from './models';
+import { TimerTrace, type AnyCallback, type IndexedCallback, type RepeatOptions, type TimerOptions, type TimerState, type WaitOptions } from './models';
 export declare abstract class BasicTimer<State> {
     protected readonly $timer: string;
     protected readonly state: State;
@@ -8,9 +8,17 @@ export declare abstract class BasicTimer<State> {
      */
     abstract readonly active: boolean;
     /**
+     * Is the timer destroyed?
+     */
+    abstract readonly destroyed: boolean;
+    /**
      * Is the timer paused?
      */
     abstract readonly paused: boolean;
+    /**
+     * Gets the traced location of the timer
+     */
+    abstract readonly trace: TimerTrace | undefined;
 }
 /**
  * A timer that can be started, stopped, and restarted as neeeded
@@ -18,16 +26,18 @@ export declare abstract class BasicTimer<State> {
 export declare class Timer extends BasicTimer<TimerState> {
     private readonly options;
     get active(): boolean;
+    get destroyed(): boolean;
     get paused(): boolean;
-    /**
-     * Gets the traced location of the timer
-     */
-    get trace(): unknown;
+    get trace(): TimerTrace | undefined;
     constructor(type: 'repeat' | 'wait', state: TimerState, options: TimerOptions);
     /**
      * Continues the timer _(if it was paused)_
      */
     continue(): Timer;
+    /**
+     * Destroys the timer _(after stopping it, if it was running)_
+     */
+    destroy(): void;
     /**
      * Pauses the timer _(if it was running)_
      */

@@ -4,6 +4,13 @@ function noop() {
 
 // src/constants.ts
 var activeTimers = new Set;
+var beginTypes = new Set(["continue", "start"]);
+var endTypes = new Set(["pause", "stop"]);
+var endOrRestartTypes = new Set([
+  "pause",
+  "restart",
+  "stop"
+]);
 var hiddenTimers = new Set;
 var milliseconds = 1000 / 60;
 
@@ -17,6 +24,13 @@ if (globalThis._oscarpalmer_timers == null) {
 }
 
 // src/functions.ts
+function destroyWhen(state) {
+  state.timer?.destroy();
+  state.promise = undefined;
+  state.rejecter = undefined;
+  state.resolver = undefined;
+  state.timer = undefined;
+}
 function getOptions(options, isRepeated) {
   return {
     afterCallback: options.afterCallback,
@@ -30,12 +44,12 @@ function getValueOrDefault(value, defaultValue, minimum) {
   return typeof value === "number" && value > (minimum ?? 0) ? value : defaultValue;
 }
 function work(type, timer, state, options) {
-  if (["continue", "start"].includes(type) && state.active || ["pause", "stop"].includes(type) && !state.active) {
+  if (state.destroyed && type !== "stop" || beginTypes.has(type) && state.active || endTypes.has(type) && !state.active) {
     return timer;
   }
   const { count, interval, timeout } = options;
   const { isRepeated, minimum } = state;
-  if (["pause", "restart", "stop"].includes(type)) {
+  if (endOrRestartTypes.has(type)) {
     const isStop = type === "stop";
     activeTimers.delete(timer);
     cancelAnimationFrame(state.frame);
@@ -104,6 +118,14 @@ function work(type, timer, state, options) {
   return timer;
 }
 
+// src/models.ts
+class TimerTrace extends Error {
+  constructor() {
+    super();
+    this.name = "TimerTrace";
+  }
+}
+
 // src/timer.ts
 function repeat(callback, options) {
   return timer("repeat", callback, options ?? {}, true);
@@ -115,6 +137,7 @@ function timer(type, callback, partial, start) {
     callback,
     isRepeated,
     active: false,
+    destroyed: false,
     minimum: options.interval - options.interval % milliseconds / 2,
     paused: false,
     trace: new TimerTrace
@@ -141,6 +164,9 @@ class Timer extends BasicTimer {
   get active() {
     return this.state.active;
   }
+  get destroyed() {
+    return this.state.destroyed;
+  }
   get paused() {
     return this.state.paused;
   }
@@ -153,6 +179,16 @@ class Timer extends BasicTimer {
   }
   continue() {
     return work("continue", this, this.state, this.options);
+  }
+  destroy() {
+    if (!this.state.destroyed) {
+      this.state.destroyed = true;
+      this.stop();
+      this.options.afterCallback = undefined;
+      this.options.errorCallback = undefined;
+      this.state.callback = undefined;
+      this.state.trace = undefined;
+    }
   }
   pause() {
     return work("pause", this, this.state, this.options);
@@ -168,19 +204,18 @@ class Timer extends BasicTimer {
   }
 }
 
-class TimerTrace extends Error {
-  constructor() {
-    super();
-    this.name = "TimerTrace";
-  }
-}
-
 // src/index.ts
 function delay(time, timeout) {
   return new Promise((resolve, reject) => {
-    wait(resolve ?? noop, {
+    const delayed = wait(() => {
+      delayed.destroy();
+      (resolve ?? noop)();
+    }, {
       timeout,
-      errorCallback: reject ?? noop,
+      errorCallback: () => {
+        delayed.destroy();
+        (reject ?? noop)();
+      },
       interval: time
     });
   });
@@ -204,63 +239,80 @@ function isWhen(value) {
 }
 // src/when.ts
 function when(condition, options) {
-  const repeated = timer("repeat", () => {
-    if (condition()) {
-      repeated.stop();
-      state.resolver?.();
-    }
-  }, {
-    afterCallback() {
-      if (!repeated.paused) {
-        if (condition()) {
-          state.resolver?.();
-        } else {
-          state.rejecter?.();
-        }
+  const state = {
+    started: false,
+    timer: timer("repeat", () => {
+      if (condition()) {
+        state.timer.stop();
       }
-    },
-    errorCallback() {
-      state.rejecter?.();
-    },
-    count: options?.count,
-    interval: options?.interval,
-    timeout: options?.timeout
-  }, false);
-  const state = {};
-  state.promise = new Promise((resolve, reject) => {
+    }, {
+      afterCallback() {
+        if (!state.timer.paused) {
+          if (condition()) {
+            state.resolver?.();
+          } else {
+            state.rejecter?.();
+          }
+          destroyWhen(state);
+        }
+      },
+      errorCallback() {
+        state.rejecter?.();
+        destroyWhen(state);
+      },
+      count: options?.count,
+      interval: options?.interval,
+      timeout: options?.timeout
+    }, false)
+  };
+  const promise = new Promise((resolve, reject) => {
     state.resolver = resolve;
     state.rejecter = reject;
   });
-  state.timer = repeated;
+  state.promise = promise;
   return new When(state);
 }
 
 class When extends BasicTimer {
   get active() {
-    return this.state.timer.active;
+    return this.state.timer?.active ?? false;
+  }
+  get destroyed() {
+    return this.state.timer == null;
   }
   get paused() {
-    return this.state.timer.paused;
+    return this.state.timer?.paused ?? false;
+  }
+  get trace() {
+    return this.state.timer?.trace;
   }
   constructor(state) {
     super("when", state);
   }
   continue() {
-    this.state.timer.continue();
+    this.state.timer?.continue();
     return this;
   }
+  destroy() {
+    if (this.state.timer != null) {
+      this.state.timer.destroy();
+    }
+  }
   pause() {
-    this.state.timer.pause();
+    this.state.timer?.pause();
     return this;
   }
   stop() {
-    if (this.state.timer.active) {
-      this.state.timer.stop();
-      this.state.rejecter?.();
-    }
+    this.state.timer?.stop();
     return this;
   }
   then(resolve, reject) {
+    if (this.state.timer == null || this.state.started) {
+      return new Promise(() => {
+        (reject ?? noop)();
+      });
+    }
+    this.state.started = true;
     this.state.timer.start();
     return this.state.promise.then(resolve ?? noop, reject ?? noop);
   }

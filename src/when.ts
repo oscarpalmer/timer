@@ -1,14 +1,23 @@
 import {noop} from '@oscarpalmer/atoms/function';
+import {destroyWhen} from './functions';
 import type {WhenOptions, WhenState} from './models';
 import {BasicTimer, timer} from './timer';
 
 export class When extends BasicTimer<WhenState> {
 	get active() {
-		return this.state.timer.active;
+		return this.state.timer?.active ?? false;
+	}
+
+	get destroyed() {
+		return this.state.timer == null;
 	}
 
 	get paused() {
-		return this.state.timer.paused;
+		return this.state.timer?.paused ?? false;
+	}
+
+	get trace() {
+		return this.state.timer?.trace;
 	}
 
 	constructor(state: WhenState) {
@@ -19,16 +28,25 @@ export class When extends BasicTimer<WhenState> {
 	 * Continues the timer _(if it was paused)_
 	 */
 	continue(): When {
-		this.state.timer.continue();
+		this.state.timer?.continue();
 
 		return this;
+	}
+
+	/**
+	 * Destroys the timer _
+	 */
+	destroy(): void {
+		if (this.state.timer != null) {
+			this.state.timer.destroy();
+		}
 	}
 
 	/**
 	 * Pauses the timer _(if it was running)_
 	 */
 	pause(): When {
-		this.state.timer.pause();
+		this.state.timer?.pause();
 
 		return this;
 	}
@@ -37,11 +55,7 @@ export class When extends BasicTimer<WhenState> {
 	 * Stops the timer _(if it was running)_
 	 */
 	stop(): When {
-		if (this.state.timer.active) {
-			this.state.timer.stop();
-
-			this.state.rejecter?.();
-		}
+		this.state.timer?.stop();
 
 		return this;
 	}
@@ -49,12 +63,19 @@ export class When extends BasicTimer<WhenState> {
 	/**
 	 * Starts the timer and returns a promise that resolves when the condition is met
 	 */
-
 	// biome-ignore lint/suspicious/noThenProperty: returning a promise-like object, so it's ok ;)
 	then(
 		resolve?: (() => void) | null,
 		reject?: (() => void) | null,
 	): Promise<void> {
+		if (this.state.timer == null || this.state.started) {
+			return new Promise(() => {
+				(reject ?? noop)();
+			});
+		}
+
+		this.state.started = true;
+
 		this.state.timer.start();
 
 		return this.state.promise.then(resolve ?? noop, reject ?? noop);
@@ -69,43 +90,46 @@ export function when(
 	condition: () => boolean,
 	options?: Partial<WhenOptions>,
 ): When {
-	const repeated = timer(
-		'repeat',
-		() => {
-			if (condition()) {
-				repeated.stop();
-
-				state.resolver?.();
-			}
-		},
-		{
-			afterCallback() {
-				if (!repeated.paused) {
-					if (condition()) {
-						state.resolver?.();
-					} else {
-						state.rejecter?.();
-					}
+	const state: WhenState = {
+		started: false,
+		timer: timer(
+			'repeat',
+			() => {
+				if (condition()) {
+					state.timer.stop();
 				}
 			},
-			errorCallback() {
-				state.rejecter?.();
+			{
+				afterCallback() {
+					if (!state.timer.paused) {
+						if (condition()) {
+							state.resolver?.();
+						} else {
+							state.rejecter?.();
+						}
+
+						destroyWhen(state);
+					}
+				},
+				errorCallback() {
+					state.rejecter?.();
+
+					destroyWhen(state);
+				},
+				count: options?.count,
+				interval: options?.interval,
+				timeout: options?.timeout,
 			},
-			count: options?.count,
-			interval: options?.interval,
-			timeout: options?.timeout,
-		},
-		false,
-	);
+			false,
+		),
+	} as never;
 
-	const state: WhenState = {} as never;
-
-	state.promise = new Promise((resolve, reject) => {
+	const promise = new Promise<void>((resolve, reject) => {
 		state.resolver = resolve;
 		state.rejecter = reject;
 	});
 
-	state.timer = repeated;
+	state.promise = promise;
 
 	return new When(state);
 }
