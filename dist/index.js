@@ -24,13 +24,6 @@ if (globalThis._oscarpalmer_timers == null) {
 }
 
 // src/functions.ts
-function destroyWhen(state) {
-  state.timer?.destroy();
-  state.promise = undefined;
-  state.rejecter = undefined;
-  state.resolver = undefined;
-  state.timer = undefined;
-}
 function getOptions(options, isRepeated) {
   return {
     afterCallback: options.afterCallback,
@@ -239,26 +232,28 @@ function isWhen(value) {
 }
 // src/when.ts
 function when(condition, options) {
+  let result = false;
   const state = {
     started: false,
     timer: timer("repeat", () => {
       if (condition()) {
+        result = true;
         state.timer.stop();
       }
     }, {
       afterCallback() {
         if (!state.timer.paused) {
-          if (condition()) {
+          if (result) {
             state.resolver?.();
           } else {
             state.rejecter?.();
           }
-          destroyWhen(state);
+          instance.destroy();
         }
       },
       errorCallback() {
         state.rejecter?.();
-        destroyWhen(state);
+        instance.destroy();
       },
       count: options?.count,
       interval: options?.interval,
@@ -270,8 +265,11 @@ function when(condition, options) {
     state.rejecter = reject;
   });
   state.promise = promise;
-  return new When(state);
+  const instance = new When(state);
+  return instance;
 }
+var destroyedMessage = "Timer has already been destroyed";
+var startedMessage = "Timer has already been started";
 
 class When extends BasicTimer {
   get active() {
@@ -294,9 +292,11 @@ class When extends BasicTimer {
     return this;
   }
   destroy() {
-    if (this.state.timer != null) {
-      this.state.timer.destroy();
-    }
+    this.state.timer?.destroy();
+    this.state.promise = undefined;
+    this.state.resolver = noop;
+    this.state.rejecter = noop;
+    this.state.timer = undefined;
   }
   pause() {
     this.state.timer?.pause();
@@ -307,10 +307,8 @@ class When extends BasicTimer {
     return this;
   }
   then(resolve, reject) {
-    if (this.state.timer == null || this.state.started) {
-      return new Promise(() => {
-        (reject ?? noop)();
-      });
+    if (this.state.timer == null || this.state?.started) {
+      throw new Error(this.state.timer == null ? destroyedMessage : startedMessage);
     }
     this.state.started = true;
     this.state.timer.start();

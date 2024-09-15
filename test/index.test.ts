@@ -103,7 +103,6 @@ test('timer: pause & continue', done => {
 });
 
 test('when', done => {
-	let repeated = false;
 	let stopped = false;
 	let value = 0;
 
@@ -135,16 +134,24 @@ test('when', done => {
 		stopped = true;
 	});
 
-	what.then(null, () => {
-		repeated = true;
-	});
+	try {
+		what.then();
+	} catch (error) {
+		expect(error).toBeInstanceOf(Error);
+	}
 
 	when(() => value > 1, {
 		timeout: 250,
 	}).then(null, () => {
-		expect(repeated).toBe(true);
 		expect(stopped).toBe(true);
 		expect(value).toEqual(1);
+
+		try {
+			what.then();
+		} catch (error) {
+			expect(error).toBeInstanceOf(Error);
+		}
+
 		done();
 	});
 });

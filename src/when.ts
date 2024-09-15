@@ -1,7 +1,9 @@
 import {noop} from '@oscarpalmer/atoms/function';
-import {destroyWhen} from './functions';
 import type {WhenOptions, WhenState} from './models';
 import {BasicTimer, timer} from './timer';
+
+const destroyedMessage = 'Timer has already been destroyed';
+const startedMessage = 'Timer has already been started';
 
 export class When extends BasicTimer<WhenState> {
 	get active() {
@@ -34,12 +36,15 @@ export class When extends BasicTimer<WhenState> {
 	}
 
 	/**
-	 * Destroys the timer _
+	 * Destroys the timer _(and stops it,if it was running)_
 	 */
 	destroy(): void {
-		if (this.state.timer != null) {
-			this.state.timer.destroy();
-		}
+		this.state.timer?.destroy();
+
+		this.state.promise = undefined as never;
+		this.state.resolver = noop;
+		this.state.rejecter = noop;
+		this.state.timer = undefined as never;
 	}
 
 	/**
@@ -68,10 +73,10 @@ export class When extends BasicTimer<WhenState> {
 		resolve?: (() => void) | null,
 		reject?: (() => void) | null,
 	): Promise<void> {
-		if (this.state.timer == null || this.state.started) {
-			return new Promise(() => {
-				(reject ?? noop)();
-			});
+		if (this.state.timer == null || this.state?.started) {
+			throw new Error(
+				this.state.timer == null ? destroyedMessage : startedMessage,
+			);
 		}
 
 		this.state.started = true;
@@ -90,31 +95,35 @@ export function when(
 	condition: () => boolean,
 	options?: Partial<WhenOptions>,
 ): When {
+	let result = false;
+
 	const state: WhenState = {
 		started: false,
 		timer: timer(
 			'repeat',
 			() => {
 				if (condition()) {
+					result = true;
+
 					state.timer.stop();
 				}
 			},
 			{
 				afterCallback() {
 					if (!state.timer.paused) {
-						if (condition()) {
+						if (result) {
 							state.resolver?.();
 						} else {
 							state.rejecter?.();
 						}
 
-						destroyWhen(state);
+						instance.destroy();
 					}
 				},
 				errorCallback() {
 					state.rejecter?.();
 
-					destroyWhen(state);
+					instance.destroy();
 				},
 				count: options?.count,
 				interval: options?.interval,
@@ -131,5 +140,7 @@ export function when(
 
 	state.promise = promise;
 
-	return new When(state);
+	const instance = new When(state);
+
+	return instance;
 }

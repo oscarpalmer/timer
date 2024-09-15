@@ -8,15 +8,6 @@ import {
 import type {TimerOptions, TimerState, WhenState, WorkType} from './models';
 import type {Timer} from './timer';
 
-export function destroyWhen(state: WhenState): void {
-	state.timer?.destroy();
-
-	state.promise = undefined as never;
-	state.rejecter = undefined;
-	state.resolver = undefined;
-	state.timer = undefined as never;
-}
-
 export function getOptions(
 	options: Partial<TimerOptions>,
 	isRepeated: boolean,

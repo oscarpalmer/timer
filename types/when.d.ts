@@ -11,7 +11,7 @@ export declare class When extends BasicTimer<WhenState> {
      */
     continue(): When;
     /**
-     * Destroys the timer _
+     * Destroys the timer _(and stops it,if it was running)_
      */
     destroy(): void;
     /**
