@@ -1,9 +1,6 @@
-node_modules
-www
+dist/
+node_modules/
+types/
+www/
 
-dist/**/*
-
-*.d.cts
 *.tsbuildinfo
-
-!dist/index.js

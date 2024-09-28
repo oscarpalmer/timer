@@ -1,3 +1,4 @@
+import type {Timer} from './timer';
 import {activeTimers} from './constants';
 
 declare global {

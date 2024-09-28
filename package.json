@@ -4,14 +4,14 @@
 		"url": "https://oscarpalmer.se"
 	},
 	"dependencies": {
-		"@oscarpalmer/atoms": "0.69.0"
+		"@oscarpalmer/atoms": "0.74.1"
 	},
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.0",
+		"@biomejs/biome": "^1.9.2",
 		"@happy-dom/global-registrator": "^15.7.4",
-		"@types/bun": "^1.1.9",
-		"bun": "^1.1.27",
+		"@types/bun": "^1.1.10",
+		"bun": "^1.1.29",
 		"dts-bundle-generator": "9.5.1",
 		"typescript": "^5.6.2"
 	},
@@ -50,5 +50,5 @@
 	},
 	"type": "module",
 	"types": "types/index.d.cts",
-	"version": "0.24.0"
+	"version": "0.25.0"
 }
