@@ -1,7 +1,7 @@
+import {activeTimers, hiddenTimers} from '~/constants';
+import '~/global';
 import {noop} from '@oscarpalmer/atoms/function';
-import {activeTimers, hiddenTimers} from './constants';
-import './global';
-import {wait} from './timer';
+import {wait} from '~/timer';
 
 /**
  * Creates a delayed promise that resolves after a certain amount of time _(or rejects when timed out)_
@@ -45,3 +45,4 @@ document.addEventListener('visibilitychange', () => {
 export {isRepeated, isTimer, isWaited, isWhen} from './is';
 export {repeat, wait, type Timer} from './timer';
 export {when, type When} from './when';
+

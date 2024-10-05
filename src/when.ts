@@ -1,6 +1,6 @@
 import {noop} from '@oscarpalmer/atoms/function';
-import type {WhenOptions, WhenState} from './models';
-import {BasicTimer, timer} from './timer';
+import type {WhenOptions, WhenState} from '~/models';
+import {BasicTimer, timer} from '~/timer';
 
 const destroyedMessage = 'Timer has already been destroyed';
 const startedMessage = 'Timer has already been started';

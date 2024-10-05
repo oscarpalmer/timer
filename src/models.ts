@@ -1,4 +1,4 @@
-import type {Timer} from './timer';
+import type {Timer} from '~/timer';
 
 /**
  * Callback that runs after the timer has finished (or is stopped)

@@ -1,5 +1,5 @@
-import {milliseconds} from './constants';
-import {getOptions, work} from './functions';
+import {milliseconds} from '~/constants';
+import {getOptions, work} from '~/functions';
 import {
 	TimerTrace,
 	type AnyCallback,
@@ -8,7 +8,7 @@ import {
 	type TimerOptions,
 	type TimerState,
 	type WaitOptions,
-} from './models';
+} from '~/models';
 
 export abstract class BasicTimer<State> {
 	protected declare readonly $timer: string;

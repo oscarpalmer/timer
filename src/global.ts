@@ -1,5 +1,5 @@
-import type {Timer} from './timer';
-import {activeTimers} from './constants';
+import type {Timer} from '~/timer';
+import {activeTimers} from '~/constants';
 
 declare global {
 	var _oscarpalmer_timer_debug: boolean | undefined;

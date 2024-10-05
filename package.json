@@ -4,51 +4,50 @@
 		"url": "https://oscarpalmer.se"
 	},
 	"dependencies": {
-		"@oscarpalmer/atoms": "0.74.1"
+		"@oscarpalmer/atoms": "0.75.0"
 	},
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
-		"@biomejs/biome": "^1.9.2",
-		"@happy-dom/global-registrator": "^15.7.4",
-		"@types/bun": "^1.1.10",
-		"bun": "^1.1.29",
-		"dts-bundle-generator": "9.5.1",
-		"typescript": "^5.6.2"
+		"@biomejs/biome": "^1.9",
+		"@types/node": "^22.7",
+		"@vitest/coverage-istanbul": "^2.1",
+		"dts-bundle-generator": "^9.5",
+		"happy-dom": "^15.7",
+		"typescript": "^5.6",
+		"vite": "^5.4",
+		"vitest": "^2.1"
 	},
 	"exports": {
 		".": {
-			"bun": "./src/index.ts",
 			"import": {
 				"types": "./types/index.d.ts",
-				"default": "./dist/index.mjs"
+				"default": "./dist/index.js"
 			},
 			"require": {
 				"types": "./types/index.d.cts",
-				"default": "./dist/index.js"
+				"default": "./dist/index.cjs"
 			}
 		}
 	},
 	"files": ["dist", "src", "types"],
 	"keywords": ["timer", "setTimeout", "setInterval", "requestAnimationFrame"],
 	"license": "MIT",
-	"main": "dist/index.js",
-	"module": "dist/index.mjs",
+	"main": "dist/index.cjs",
+	"module": "dist/index.js",
 	"name": "@oscarpalmer/timer",
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/oscarpalmer/timer.git"
 	},
 	"scripts": {
-		"build": "bun run clean && bun run build:js && bun run types",
-		"build:js": "bunx bun ./.bun.ts && bunx bun ./.bun.ts --mjs",
+		"build": "npm run clean && npm run build:js && npm run types",
+		"build:js": "npx vite build",
 		"clean": "rm -rf ./dist && rm -rf ./types && rm -f ./tsconfig.tsbuildinfo",
-		"test": "bun test",
-		"types": "bun run types:cjs && bun run types:esm",
-		"types:cjs": "bunx dts-bundle-generator --out-file ./types/index.d.cts --external-inlines '@oscarpalmer/atoms' --no-check --silent ./src/index.ts",
-		"types:esm": "bunx tsc -p ./tsconfig.json",
-		"watch": "bun build ./src/index.ts --outfile ./dist/index.js --watch"
+		"test": "npx vitest --coverage",
+		"types": "npx tsc && npx dts-bundle-generator --config ./dts.config.ts",
+		"watch": "npx vite build --watch"
 	},
 	"type": "module",
 	"types": "types/index.d.cts",
-	"version": "0.25.0"
+	"version": "0.26.0"
 }
