@@ -1,10 +1,8 @@
 /// <reference types="vitest" />
-import {globSync} from 'node:fs';
-import {dirname, extname, relative} from 'node:path';
+import {extname, relative} from 'node:path';
 import {fileURLToPath} from 'node:url';
+import {globSync} from 'glob';
 import {defineConfig} from 'vite';
-
-const __dirname = dirname(fileURLToPath(import.meta.url));
 
 const watch = process.argv.includes('--watch');
 
