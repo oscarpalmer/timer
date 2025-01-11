@@ -1,4 +1,4 @@
-import type {Timer} from '~/timer';
+import type {Timer} from './timer';
 
 /**
  * Callback that runs after the timer has finished (or is stopped)
@@ -60,7 +60,7 @@ export type TimerState = {
 	isRepeated: boolean;
 	minimum: number;
 	paused: boolean;
-	trace: TimerTrace;
+	trace?: string;
 };
 
 export class TimerTrace extends Error {

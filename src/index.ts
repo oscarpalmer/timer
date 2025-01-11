@@ -1,7 +1,7 @@
-import {activeTimers, hiddenTimers} from '~/constants';
-import '~/global';
 import {noop} from '@oscarpalmer/atoms/function';
-import {wait} from '~/timer';
+import {activeTimers, hiddenTimers} from './constants';
+import './global';
+import {wait} from './timer';
 
 /**
  * Creates a delayed promise that resolves after a certain amount of time _(or rejects when timed out)_

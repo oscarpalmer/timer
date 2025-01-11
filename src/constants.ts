@@ -1,5 +1,5 @@
-import type {WorkType} from '~/models';
-import type {Timer} from '~/timer';
+import type {WorkType} from './models';
+import type {Timer} from './timer';
 
 /**
  * A set of all active timers

@@ -1,6 +1,6 @@
 /// <reference types="vitest" />
 import {globSync} from 'node:fs';
-import {dirname, extname, relative, resolve} from 'node:path';
+import {dirname, extname, relative} from 'node:path';
 import {fileURLToPath} from 'node:url';
 import {defineConfig} from 'vite';
 
@@ -37,8 +37,5 @@ export default defineConfig({
 		},
 		environment: 'happy-dom',
 		watch: false,
-	},
-	resolve: {
-		alias: [{find: '~', replacement: resolve(__dirname, 'src')}],
 	},
 });

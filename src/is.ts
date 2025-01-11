@@ -1,6 +1,6 @@
 import type {PlainObject} from '@oscarpalmer/atoms/models';
-import type {Timer} from '~/timer';
-import type {When} from '~/when';
+import type {Timer} from './timer';
+import type {When} from './when';
 
 function is(pattern: RegExp, value: unknown) {
 	return pattern.test((value as PlainObject)?.$timer as string);

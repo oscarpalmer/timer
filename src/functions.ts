@@ -4,9 +4,9 @@ import {
 	endOrRestartTypes,
 	endTypes,
 	milliseconds,
-} from '~/constants';
-import type {TimerOptions, TimerState, WorkType} from '~/models';
-import type {Timer} from '~/timer';
+} from './constants';
+import type {TimerOptions, TimerState, WorkType} from './models';
+import type {Timer} from './timer';
 
 export function getOptions(
 	options: Partial<TimerOptions>,

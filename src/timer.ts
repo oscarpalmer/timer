@@ -1,14 +1,14 @@
-import {milliseconds} from '~/constants';
-import {getOptions, work} from '~/functions';
+import {milliseconds} from './constants';
+import {getOptions, work} from './functions';
 import {
-	TimerTrace,
 	type AnyCallback,
 	type IndexedCallback,
 	type RepeatOptions,
 	type TimerOptions,
 	type TimerState,
+	TimerTrace,
 	type WaitOptions,
-} from '~/models';
+} from './models';
 
 export abstract class BasicTimer<State> {
 	protected declare readonly $timer: string;
@@ -37,7 +37,7 @@ export abstract class BasicTimer<State> {
 	/**
 	 * Gets the traced location of the timer
 	 */
-	abstract readonly trace: TimerTrace | undefined;
+	abstract readonly trace: string | undefined;
 }
 
 /**
@@ -159,7 +159,7 @@ export function timer(
 			destroyed: false,
 			minimum: options.interval - (options.interval % milliseconds) / 2,
 			paused: false,
-			trace: new TimerTrace(),
+			trace: new TimerTrace().stack,
 		},
 		options,
 	);

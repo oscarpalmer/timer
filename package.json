@@ -4,17 +4,20 @@
 		"url": "https://oscarpalmer.se"
 	},
 	"dependencies": {
-		"@oscarpalmer/atoms": "0.75.0"
+		"@oscarpalmer/atoms": "0.81.0"
 	},
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
 		"@biomejs/biome": "^1.9",
-		"@types/node": "^22.7",
+		"@rollup/plugin-node-resolve": "^16",
+		"@rollup/plugin-typescript": "^12.1",
+		"@types/node": "^22.10",
 		"@vitest/coverage-istanbul": "^2.1",
 		"dts-bundle-generator": "^9.5",
-		"happy-dom": "^15.7",
-		"typescript": "^5.6",
-		"vite": "^5.4",
+		"happy-dom": "^16.5",
+		"tslib": "^2.8",
+		"typescript": "^5.7",
+		"vite": "^6",
 		"vitest": "^2.1"
 	},
 	"exports": {
@@ -40,14 +43,15 @@
 		"url": "git+https://github.com/oscarpalmer/timer.git"
 	},
 	"scripts": {
-		"build": "npm run clean && npm run build:js && npm run types",
+		"build": "npm run clean && npm run build:js && npm run rollup && npm run types",
 		"build:js": "npx vite build",
 		"clean": "rm -rf ./dist && rm -rf ./types && rm -f ./tsconfig.tsbuildinfo",
+		"rollup": "npx rollup -c",
 		"test": "npx vitest --coverage",
 		"types": "npx tsc && npx dts-bundle-generator --config ./dts.config.ts",
 		"watch": "npx vite build --watch"
 	},
 	"type": "module",
 	"types": "types/index.d.cts",
-	"version": "0.26.0"
+	"version": "0.27.0"
 }
