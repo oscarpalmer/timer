@@ -1,23 +1,27 @@
 import {noop} from '@oscarpalmer/atoms/function';
 import {activeTimers, hiddenTimers} from './constants';
 import './global';
-import {wait} from './timer';
+import {type Timer, wait} from './timer';
 
 /**
  * Creates a delayed promise that resolves after a certain amount of time _(or rejects when timed out)_
  */
 export function delay(time: number, timeout?: number): Promise<void> {
 	return new Promise((resolve, reject) => {
-		const delayed = wait(
+		let delayed: Timer | null = wait(
 			() => {
-				delayed.destroy();
+				delayed?.destroy();
+
+				delayed = null;
 
 				(resolve ?? noop)();
 			},
 			{
 				timeout,
 				errorCallback: () => {
-					delayed.destroy();
+					delayed?.destroy();
+
+					delayed = null;
 
 					(reject ?? noop)();
 				},
@@ -45,4 +49,3 @@ document.addEventListener('visibilitychange', () => {
 export {isRepeated, isTimer, isWaited, isWhen} from './is';
 export {repeat, wait, type Timer} from './timer';
 export {when, type When} from './when';
-

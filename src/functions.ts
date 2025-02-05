@@ -14,20 +14,20 @@ export function getOptions(
 ): TimerOptions {
 	return {
 		afterCallback: options.afterCallback,
-		count: getValueOrDefault(
+		count: getNumberOrDefault(
 			options.count,
 			isRepeated ? Number.POSITIVE_INFINITY : 1,
 		),
 		errorCallback: options.errorCallback,
-		interval: getValueOrDefault(options.interval, milliseconds, milliseconds),
-		timeout: getValueOrDefault(
+		interval: getNumberOrDefault(options.interval, milliseconds, milliseconds),
+		timeout: getNumberOrDefault(
 			options.timeout,
 			isRepeated ? Number.POSITIVE_INFINITY : 30_000,
 		),
 	};
 }
 
-export function getValueOrDefault(
+function getNumberOrDefault(
 	value: unknown,
 	defaultValue: number,
 	minimum?: number,
@@ -80,9 +80,9 @@ export function work(
 	state.active = true;
 	state.paused = false;
 
-	const elapsed = type === 'continue' ? +(state.elapsed ?? 0) : 0;
+	const elapsed = type === 'continue' ? Number(state.elapsed ?? 0) : 0;
 
-	let index = type === 'continue' ? +(state.index ?? 0) : 0;
+	let index = type === 'continue' ? Number(state.index ?? 0) : 0;
 
 	state.elapsed = elapsed;
 	state.index = index;
