@@ -1,5 +1,5 @@
+import {activeTimers, hiddenTimers} from './constants';
 import type {Timer} from './timer';
-import {activeTimers} from './constants';
 
 declare global {
 	var _oscarpalmer_timer_debug: boolean | undefined;
@@ -13,3 +13,18 @@ if (globalThis._oscarpalmer_timers == null) {
 		},
 	});
 }
+
+document.addEventListener('visibilitychange', () => {
+	if (document.hidden) {
+		for (const timer of activeTimers) {
+			hiddenTimers.add(timer);
+			timer.pause();
+		}
+	} else {
+		for (const timer of hiddenTimers) {
+			timer.continue();
+		}
+
+		hiddenTimers.clear();
+	}
+});

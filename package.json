@@ -4,22 +4,23 @@
 		"url": "https://oscarpalmer.se"
 	},
 	"dependencies": {
-		"@oscarpalmer/atoms": "^0.82"
+		"@oscarpalmer/atoms": "^0.99"
 	},
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
 		"@biomejs/biome": "^1.9",
 		"@rollup/plugin-node-resolve": "^16",
 		"@rollup/plugin-typescript": "^12.1",
-		"@types/node": "^22.13",
-		"@vitest/coverage-istanbul": "^3",
+		"@types/node": "^22.15",
+		"@vitest/coverage-istanbul": "^3.1",
 		"dts-bundle-generator": "^9.5",
 		"glob": "^11",
-		"happy-dom": "^16.8",
+		"happy-dom": "^17.4",
+		"jsdom": "^26.1",
 		"tslib": "^2.8",
-		"typescript": "^5.7",
-		"vite": "^6",
-		"vitest": "^3"
+		"typescript": "^5.8",
+		"vite": "^6.3",
+		"vitest": "^3.1"
 	},
 	"exports": {
 		".": {
@@ -30,6 +31,46 @@
 			"require": {
 				"types": "./types/index.d.cts",
 				"default": "./dist/index.cjs"
+			}
+		},
+		"./delay": {
+			"import": {
+				"types": "./types/delay.d.ts",
+				"default": "./dist/delay.js"
+			},
+			"require": {
+				"types": "./types/delay.d.cts",
+				"default": "./dist/delay.cjs"
+			}
+		},
+		"./repeat": {
+			"import": {
+				"types": "./types/repeat.d.ts",
+				"default": "./dist/repeat.js"
+			},
+			"require": {
+				"types": "./types/repeat.d.cts",
+				"default": "./dist/repeat.cjs"
+			}
+		},
+		"./wait": {
+			"import": {
+				"types": "./types/wait.d.ts",
+				"default": "./dist/wait.js"
+			},
+			"require": {
+				"types": "./types/wait.d.cts",
+				"default": "./dist/wait.cjs"
+			}
+		},
+		"./when": {
+			"import": {
+				"types": "./types/when.d.ts",
+				"default": "./dist/when.js"
+			},
+			"require": {
+				"types": "./types/when.d.cts",
+				"default": "./dist/when.cjs"
 			}
 		}
 	},
@@ -49,10 +90,10 @@
 		"clean": "rm -rf ./dist && rm -rf ./types && rm -f ./tsconfig.tsbuildinfo",
 		"rollup": "npx rollup -c",
 		"test": "npx vitest --coverage",
-		"types": "npx tsc && npx dts-bundle-generator --config ./dts.config.cts",
+		"types": "npx tsc && npx dts-bundle-generator --config ./dts.config.cts --silent",
 		"watch": "npx vite build --watch"
 	},
 	"type": "module",
 	"types": "types/index.d.cts",
-	"version": "0.28.0"
+	"version": "0.29.0"
 }

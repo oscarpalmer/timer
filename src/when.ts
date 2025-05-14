@@ -1,29 +1,46 @@
 import {noop} from '@oscarpalmer/atoms/function';
-import type {WhenOptions, WhenState} from './models';
-import {BasicTimer, timer} from './timer';
+import {destroyedMessage, milliseconds, startedMessage} from './constants';
+import {getValidNumber} from './get';
+import {TimerTrace, type WhenOptions, type WhenState} from './models';
+import {Timer} from './timer';
+import {work} from './work';
 
-const destroyedMessage = 'Timer has already been destroyed';
-const startedMessage = 'Timer has already been started';
+class When {
+	private readonly $timer = 'when';
+	private readonly state: WhenState;
 
-export class When extends BasicTimer<WhenState> {
+	/**
+	 * Is the timer active?
+	 */
 	get active() {
 		return this.state.timer?.active ?? false;
 	}
 
+	/**
+	 * Is the timer destroyed?
+	 */
 	get destroyed() {
 		return this.state.timer == null;
 	}
 
+	/**
+	 * Is the timer paused?
+	 */
 	get paused() {
 		return this.state.timer?.paused ?? false;
 	}
 
-	get trace() {
-		return this.state.timer?.trace;
+	/**
+	 * Get the timer's origin _(if debugging is enabled)_
+	 */
+	get trace(): string | undefined {
+		return globalThis._oscarpalmer_timer_debug ?? false
+			? this.state.timer?.trace
+			: undefined;
 	}
 
 	constructor(state: WhenState) {
-		super('when', state);
+		this.state = state;
 	}
 
 	/**
@@ -88,29 +105,35 @@ export class When extends BasicTimer<WhenState> {
 }
 
 /**
- * - Creates a promise that resolves when a condition is met
- * - If the condition is never met in a timely manner, the promise will reject
+ * Create a conditional timer
  */
 export function when(
 	condition: () => boolean,
 	options?: Partial<WhenOptions>,
 ): When {
+	let called = false;
 	let result = false;
 
 	const state: WhenState = {
 		started: false,
-		timer: timer(
-			'repeat',
-			() => {
-				if (condition()) {
-					result = true;
+		timer: new Timer(
+			'when',
+			work,
+			{
+				callback() {
+					if (condition()) {
+						result = true;
 
-					state.timer.stop();
-				}
+						state.timer.stop();
+					}
+				},
+				trace: new TimerTrace().stack,
 			},
 			{
-				afterCallback() {
-					if (!state.timer.paused) {
+				onAfter() {
+					if (!(state.timer?.paused ?? false) && !called) {
+						called = true;
+
 						if (result) {
 							state.resolver?.();
 						} else {
@@ -120,14 +143,14 @@ export function when(
 						instance.destroy();
 					}
 				},
-				errorCallback() {
+				onError() {
 					state.rejecter?.();
 
 					instance.destroy();
 				},
-				count: options?.count,
-				interval: options?.interval,
-				timeout: options?.timeout,
+				count: getValidNumber(options?.count),
+				interval: getValidNumber(options?.interval, milliseconds),
+				timeout: getValidNumber(options?.timeout),
 			},
 			false,
 		),
@@ -144,3 +167,5 @@ export function when(
 
 	return instance;
 }
+
+export type {When};

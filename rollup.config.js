@@ -16,9 +16,8 @@ tsConfig.compilerOptions = {
 export default {
 	input: './src/index.ts',
 	output: {
-		file: './dist/timer.iife.js',
-		format: 'iife',
-		name: 'Timer',
+		file: './dist/timer.full.js',
+		format: 'es',
 	},
 	plugins: [pluginNodeResolve(), pluginTypescript(tsConfig)],
 };

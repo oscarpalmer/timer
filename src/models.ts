@@ -1,66 +1,41 @@
 import type {Timer} from './timer';
 
 /**
- * Callback that runs after the timer has finished (or is stopped)
- * - `finished` is `true` if the timer was allowed to finish, and `false` if it was stopped
+ * Options for a repeating timer
  */
-export type AfterCallback = (finished: boolean) => void;
-
-export type AnyCallback = (() => void) | IndexedCallback;
-
-/**
- * Callback that runs for each iteration of the timer
- */
-export type IndexedCallback = (index: number) => void;
-
-export type BaseOptions = {
+export type RepeatOptions = {
 	/**
-	 * Interval between each callback
+	 * Callback to be called when the timer has stopped, either manually or by completing its work
 	 */
-	interval: number;
-	/**
-	 * Maximum amount of time the timer may run for
-	 */
-	timeout: number;
-};
-
-export type OptionsWithCount = {
+	onAfter: ((finished: boolean) => void) | undefined;
 	/**
 	 * How many times the timer should repeat
 	 */
 	count: number;
-} & BaseOptions;
-
-export type OptionsWithError = {
 	/**
-	 * Callback to run when an error occurs _(usually a timeout)_
+	 * The interval between each repeat
 	 */
-	errorCallback?: () => void;
+	interval: number;
 };
 
-export type RepeatOptions = {
-	/**
-	 * Callback to run after the timer has finished (or is stopped)
-	 * - `finished` is `true` if the timer was allowed to finish, and `false` if it was stopped
-	 */
-	afterCallback?: AfterCallback;
-} & OptionsWithCount &
-	OptionsWithError;
-
-export type TimerOptions = {} & RepeatOptions;
+export type TimerOptions = {
+	onAfter: ((finished: boolean) => void) | undefined;
+	onError: (() => void) | undefined;
+	count: number;
+	interval: number;
+	timeout: number;
+};
 
 export type TimerState = {
 	active: boolean;
-	callback: AnyCallback;
+	callback: () => void;
 	destroyed: boolean;
-	count?: number;
-	elapsed?: number;
-	frame?: number;
-	index?: number;
-	isRepeated: boolean;
-	minimum: number;
+	elapsed: number;
+	frame: number | undefined;
+	index: number;
 	paused: boolean;
-	trace?: string;
+	total: number;
+	trace: string | undefined;
 };
 
 export class TimerTrace extends Error {
@@ -71,9 +46,25 @@ export class TimerTrace extends Error {
 	}
 }
 
-export type WaitOptions = {} & BaseOptions & OptionsWithError;
+export type TimerType = 'repeat' | 'wait' | 'when';
 
-export type WhenOptions = {} & OptionsWithCount;
+/**
+ * Options for a conditional timer
+ */
+export type WhenOptions = {
+	/**
+	 * How many times the timer should check the condition
+	 */
+	count: number;
+	/**
+	 * Then interval between each condtional check
+	 */
+	interval: number;
+	/**
+	 * The timeout for the timer
+	 */
+	timeout: number;
+};
 
 export type WhenState = {
 	promise: Promise<void>;
@@ -83,4 +74,21 @@ export type WhenState = {
 	timer: Timer;
 };
 
-export type WorkType = 'continue' | 'pause' | 'restart' | 'start' | 'stop';
+export type WorkHandler = (
+	type: WorkHandlerType,
+	timer: WorkHandlerTimer,
+	state: TimerState,
+	options: TimerOptions,
+) => Timer;
+
+export type WorkHandlerTimer = {
+	instance: Timer;
+	type: TimerType;
+};
+
+export type WorkHandlerType =
+	| 'continue'
+	| 'pause'
+	| 'restart'
+	| 'start'
+	| 'stop';

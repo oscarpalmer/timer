@@ -16,24 +16,26 @@ export default defineConfig({
 	build: {
 		lib: {
 			entry: [],
-			formats: ['cjs', 'es'],
+			formats: watch ? ['es'] : ['cjs', 'es'],
 		},
 		minify: false,
 		outDir: './dist',
 		rollupOptions: {
-			external: ['@oscarpalmer/atoms/function'],
 			input: Object.fromEntries(files),
 			output: {
+				generatedCode: 'es2015',
 				preserveModules: true,
 			},
 		},
+		target: 'esnext',
 	},
+	logLevel: 'silent',
 	test: {
 		coverage: {
 			include: ['src/**/*.ts'],
 			provider: 'istanbul',
 		},
-		environment: 'happy-dom',
-		watch: false,
+		environment: 'jsdom',
+		watch: watch,
 	},
 });

@@ -6,7 +6,9 @@ const entries = globSync('./src/**/*.ts').map(file => ({
 		inlinedLibraries: ['@oscarpalmer/atoms'],
 	},
 	noCheck: true,
-	outFile: `${__dirname}/types/${file.replace('src/', '').replace('.ts', '.d.cts')}`,
+	outFile: `${__dirname}/types/${file
+		.replace('src/', '')
+		.replace('.ts', '.d.cts')}`,
 }));
 
 module.exports = {
