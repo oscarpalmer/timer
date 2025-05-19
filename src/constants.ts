@@ -2,6 +2,32 @@ import type {WorkHandlerType} from './models';
 import type {Timer} from './timer';
 
 /**
+ * Stepper to calculate the average refresh rate of the display
+ */
+function stepper(now: DOMHighResTimeStamp): void {
+	if (values.length === 7) {
+		milliseconds = Math.floor(
+			(values.slice(2).reduce((first, second) => first + second) / 5) * 2,
+		) / 2;
+
+		last = undefined;
+		values.length = 0;
+	} else {
+		last ??= now;
+
+		const difference = now - last;
+
+		if (difference > 0) {
+			values.push(difference);
+		}
+
+		last = now;
+
+		requestAnimationFrame(stepper);
+	}
+}
+
+/**
  * A set of all active timers
  */
 export const activeTimers = new Set<Timer>();
@@ -48,31 +74,8 @@ const values: number[] = [];
 let last: DOMHighResTimeStamp | undefined;
 
 /**
- * A calculated average of the refresh rate of the display
+ * A calculated average of the refresh rate of the display _(in milliseconds)_
  */
-export let milliseconds: number;
+export let milliseconds = Math.floor((1000 / 60) * 2) / 2;
 
-function step(now: DOMHighResTimeStamp): void {
-	if (values.length === 10) {
-		milliseconds = Math.floor(
-			values.slice(2, -2).reduce((first, second) => first + second) / 6,
-		);
-
-		last = undefined;
-		values.length = 0;
-	} else {
-		last ??= now;
-
-		const difference = now - last;
-
-		if (difference > 0) {
-			values.push(difference);
-		}
-
-		last = now;
-
-		requestAnimationFrame(step);
-	}
-}
-
-requestAnimationFrame(step);
+requestAnimationFrame(stepper);
