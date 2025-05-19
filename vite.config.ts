@@ -21,6 +21,7 @@ export default defineConfig({
 		minify: false,
 		outDir: './dist',
 		rollupOptions: {
+			external: watch ? [] : ['@oscarpalmer/atoms/function'],
 			input: Object.fromEntries(files),
 			output: {
 				generatedCode: 'es2015',

@@ -1,3 +1,4 @@
+import {noop} from '@oscarpalmer/atoms/function';
 import type {
 	TimerOptions,
 	TimerState,
@@ -78,6 +79,12 @@ export class Timer {
 	 */
 	destroy(): void {
 		this.state.destroyed = true;
+
+		this.options.onAfter = noop;
+		this.options.onError = noop;
+
+		this.state.callback = noop;
+		this.state.trace = undefined;
 
 		this.#work('stop');
 	}

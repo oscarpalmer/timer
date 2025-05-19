@@ -1,5 +1,6 @@
 import {expect, test} from 'vitest';
 import '../src/global';
+import {noop} from '@oscarpalmer/atoms/function';
 import {wait} from '../src/wait';
 
 test('wait', async () =>
@@ -86,6 +87,18 @@ test('wait', async () =>
 			expect(five.active).toBe(false);
 			expect(five.destroyed).toBe(true);
 			expect(values.five).toBe(0);
+
+			// @ts-expect-error Testing protected options being destroyed
+			const options = five.options;
+
+			expect(options.onAfter).toBe(noop);
+			expect(options.onError).toBe(noop);
+
+			// @ts-expect-error Testing protected state being destroyed
+			const state = five.state;
+
+			expect(state.callback).toBe(noop);
+			expect(state.trace).toBe(undefined);
 
 			done();
 		}, 500);
