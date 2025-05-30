@@ -1,8 +1,8 @@
 import {milliseconds} from './constants';
 import {getCallback, getValidNumber} from './get';
+import './global';
 import {type RepeatOptions, TimerTrace} from './models';
 import {Timer} from './timer';
-import {work} from './work';
 
 /**
  * Create a repeating timer
@@ -13,7 +13,6 @@ export function repeat(
 ): Timer {
 	return new Timer(
 		'repeat',
-		work,
 		{
 			callback: getCallback(callback),
 			trace: new TimerTrace().stack,

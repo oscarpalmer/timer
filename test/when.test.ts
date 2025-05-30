@@ -121,3 +121,25 @@ test('when: timeout', () =>
 			done();
 		}, 100);
 	}));
+
+test('failing condition', () =>
+	new Promise<void>(done => {
+		let error: boolean | undefined;
+
+		when(() => {
+			throw new Error();
+		})
+			.then(
+				() => {
+					error = false;
+				},
+				() => {
+					error = true;
+				},
+			)
+			.then(() => {
+				expect(error).toBe(true);
+
+				done();
+			});
+	}));

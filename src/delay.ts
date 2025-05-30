@@ -1,4 +1,4 @@
-import {milliseconds} from './constants';
+import {intervalBuffer, milliseconds} from './constants';
 import {getValidNumber} from './get';
 
 /**
@@ -13,7 +13,10 @@ export function delay(time?: number): Promise<void> {
 		function step(now: DOMHighResTimeStamp) {
 			start ??= now;
 
-			if (interval === milliseconds || now - start >= interval - 5) {
+			if (
+				interval === milliseconds ||
+				now - start >= interval - intervalBuffer
+			) {
 				resolve();
 			} else {
 				requestAnimationFrame(step);

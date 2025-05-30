@@ -1,8 +1,8 @@
 import {milliseconds} from './constants';
 import {getCallback, getValidNumber} from './get';
+import './global';
 import {TimerTrace} from './models';
 import {Timer} from './timer';
-import {work} from './work';
 
 /**
  * Create a waiting timer
@@ -12,7 +12,6 @@ import {work} from './work';
 export function wait(callback: () => void, time?: number): Timer {
 	return new Timer(
 		'wait',
-		work,
 		{
 			callback: getCallback(callback),
 			trace: new TimerTrace().stack,

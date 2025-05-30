@@ -1,30 +1,35 @@
 import type {WorkHandlerType} from './models';
 import type {Timer} from './timer';
 
-/**
- * Stepper to calculate the average refresh rate of the display
- */
-function stepper(now: DOMHighResTimeStamp): void {
-	if (values.length === 7) {
-		milliseconds = Math.floor(
-			(values.slice(2).reduce((first, second) => first + second) / 5) * 2,
-		) / 2;
+function calculate(): Promise<number> {
+	return new Promise(resolve => {
+		const values: number[] = [];
 
-		last = undefined;
-		values.length = 0;
-	} else {
-		last ??= now;
+		let last: DOMHighResTimeStamp | undefined;
 
-		const difference = now - last;
+		function step(now: DOMHighResTimeStamp): void {
+			if (last != null) {
+				values.push(now - last);
+			}
 
-		if (difference > 0) {
-			values.push(difference);
+			last = now;
+
+			if (values.length >= 10) {
+				const median =
+					values
+						.sort()
+						.slice(2, -2)
+						.reduce((first, second) => first + second, 0) /
+					(values.length - 4);
+
+				resolve(median);
+			} else {
+				requestAnimationFrame(step);
+			}
 		}
 
-		last = now;
-
-		requestAnimationFrame(stepper);
-	}
+		requestAnimationFrame(step);
+	});
 }
 
 /**
@@ -36,6 +41,11 @@ export const activeTimers = new Set<Timer>();
  * A set of types that allow work to begin
  */
 export const beginTypes = new Set<WorkHandlerType>(['continue', 'start']);
+
+/**
+ * Buffer value to use when evaluating if a specific time is within a certain range
+ */
+export const intervalBuffer = 5;
 
 /**
  * Message to show when a when-timer is destroyed
@@ -70,12 +80,11 @@ export const startedMessage = 'Timer has already been started';
 
 //
 
-const values: number[] = [];
-let last: DOMHighResTimeStamp | undefined;
-
 /**
  * A calculated average of the refresh rate of the display _(in milliseconds)_
  */
-export let milliseconds = Math.floor((1000 / 60) * 2) / 2;
+export let milliseconds = 1000 / 60;
 
-requestAnimationFrame(stepper);
+calculate().then(value => {
+	milliseconds = value;
+});

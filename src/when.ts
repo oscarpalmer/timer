@@ -1,13 +1,19 @@
 import {noop} from '@oscarpalmer/atoms/function';
 import {destroyedMessage, milliseconds, startedMessage} from './constants';
 import {getValidNumber} from './get';
+import './global';
 import {TimerTrace, type WhenOptions, type WhenState} from './models';
 import {Timer} from './timer';
-import {work} from './work';
 
 class When {
 	private readonly $timer = 'when';
-	private readonly state: WhenState;
+	private readonly state: WhenState = {
+		promise: undefined as never,
+		rejecter: undefined as never,
+		resolver: undefined as never,
+		started: false,
+		timer: undefined as never,
+	};
 
 	/**
 	 * Is the timer active?
@@ -39,8 +45,53 @@ class When {
 			: undefined;
 	}
 
-	constructor(state: WhenState) {
-		this.state = state;
+	constructor(condition: () => boolean, options?: Partial<WhenOptions>) {
+		const {state} = this;
+
+		state.promise = new Promise<void>((resolve, reject) => {
+			state.resolver = resolve;
+			state.rejecter = reject;
+		});
+
+		let result = false;
+
+		this.state.timer = new Timer(
+			'when',
+			{
+				callback(): void {
+					try {
+						if (condition()) {
+							result = true;
+
+							state.timer.stop();
+						}
+					} catch {
+						state.timer.stop();
+					}
+				},
+				trace: new TimerTrace().stack,
+			},
+			{
+				onAfter: () => {
+					if (result) {
+						state.resolver?.();
+					} else {
+						state.rejecter?.();
+					}
+
+					this.destroy();
+				},
+				onError: () => {
+					state.rejecter?.();
+
+					this.destroy();
+				},
+				count: getValidNumber(options?.count),
+				interval: getValidNumber(options?.interval, milliseconds),
+				timeout: getValidNumber(options?.timeout),
+			},
+			false,
+		);
 	}
 
 	/**
@@ -56,12 +107,14 @@ class When {
 	 * Destroys the timer _(and stops it,if it was running)_
 	 */
 	destroy(): void {
-		this.state.timer?.destroy();
+		const {state} = this;
 
-		this.state.promise = undefined as never;
-		this.state.resolver = noop;
-		this.state.rejecter = noop;
-		this.state.timer = undefined as never;
+		state.timer?.destroy();
+
+		state.promise = undefined as never;
+		state.resolver = noop;
+		state.rejecter = noop;
+		state.timer = undefined as never;
 	}
 
 	/**
@@ -90,17 +143,21 @@ class When {
 		resolve?: (() => void) | null,
 		reject?: (() => void) | null,
 	): Promise<void> {
-		if (this.state.timer == null || this.state?.started) {
-			throw new Error(
-				this.state.timer == null ? destroyedMessage : startedMessage,
-			);
+		const {state} = this;
+
+		if (state.timer == null) {
+			throw new Error(destroyedMessage);
 		}
 
-		this.state.started = true;
+		if (state.started) {
+			throw new Error(startedMessage);
+		}
 
-		this.state.timer.start();
+		state.started = true;
 
-		return this.state.promise.then(resolve ?? noop, reject ?? noop);
+		state.timer.start();
+
+		return state.promise.then(resolve ?? noop, reject ?? noop);
 	}
 }
 
@@ -111,61 +168,7 @@ export function when(
 	condition: () => boolean,
 	options?: Partial<WhenOptions>,
 ): When {
-	let called = false;
-	let result = false;
-
-	const state: WhenState = {
-		started: false,
-		timer: new Timer(
-			'when',
-			work,
-			{
-				callback() {
-					if (condition()) {
-						result = true;
-
-						state.timer.stop();
-					}
-				},
-				trace: new TimerTrace().stack,
-			},
-			{
-				onAfter() {
-					if (!(state.timer?.paused ?? false) && !called) {
-						called = true;
-
-						if (result) {
-							state.resolver?.();
-						} else {
-							state.rejecter?.();
-						}
-
-						instance.destroy();
-					}
-				},
-				onError() {
-					state.rejecter?.();
-
-					instance.destroy();
-				},
-				count: getValidNumber(options?.count),
-				interval: getValidNumber(options?.interval, milliseconds),
-				timeout: getValidNumber(options?.timeout),
-			},
-			false,
-		),
-	} as never;
-
-	const promise = new Promise<void>((resolve, reject) => {
-		state.resolver = resolve;
-		state.rejecter = reject;
-	});
-
-	state.promise = promise;
-
-	const instance = new When(state);
-
-	return instance;
+	return new When(condition, options);
 }
 
 export type {When};

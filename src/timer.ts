@@ -3,9 +3,9 @@ import type {
 	TimerOptions,
 	TimerState,
 	TimerType,
-	WorkHandler,
 	WorkHandlerType,
 } from './models';
+import {stop, work} from './work';
 
 export class Timer {
 	private declare readonly $timer: TimerType;
@@ -44,7 +44,6 @@ export class Timer {
 
 	constructor(
 		type: TimerType,
-		protected readonly worker: WorkHandler,
 		state: Pick<TimerState, 'callback' | 'trace'>,
 		protected readonly options: TimerOptions,
 		start: boolean,
@@ -82,11 +81,20 @@ export class Timer {
 
 		this.options.onAfter = noop;
 		this.options.onError = noop;
-
 		this.state.callback = noop;
-		this.state.trace = undefined;
 
-		this.#work('stop');
+		if (!globalThis._oscarpalmer_timer_debug) {
+			this.state.trace = undefined;
+		}
+
+		stop(
+			{
+				instance: this,
+				type: this.$timer,
+			},
+			this.state,
+			this.options,
+		);
 	}
 
 	/**
@@ -118,7 +126,7 @@ export class Timer {
 	}
 
 	#work(type: WorkHandlerType): Timer {
-		return this.worker(
+		return work(
 			type,
 			{
 				instance: this,
