@@ -103,3 +103,19 @@ test('wait', async () =>
 			done();
 		}, 500);
 	}));
+
+
+test(
+	'long',
+	async () =>
+		new Promise<void>(done => {
+			const now = performance.now();
+
+			wait(() => {
+				expect(performance.now() - now).toBeGreaterThanOrEqual(5000);
+
+				done();
+			}, 5000);
+		}),
+	5500,
+);

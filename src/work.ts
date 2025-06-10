@@ -67,6 +67,7 @@ function run(
 	state: TimerState,
 	options: TimerOptions,
 ): (now: DOMHighResTimeStamp) => void {
+	let last: DOMHighResTimeStamp | undefined;
 	let start: DOMHighResTimeStamp | undefined;
 
 	return function step(now: DOMHighResTimeStamp): void {
@@ -74,12 +75,15 @@ function run(
 			return;
 		}
 
+		last ??= now;
 		start ??= now;
 
-		const difference = now - start;
+		const difference = now - last;
 
 		state.elapsed += difference;
 		state.total += difference;
+
+		last = now;
 
 		if (options.timeout > 0 && state.total >= options.timeout) {
 			options.onError?.();
