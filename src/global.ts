@@ -1,4 +1,9 @@
-import {activeTimers, hiddenTimers} from './constants';
+import {
+	activeTimers,
+	hiddenTimers,
+	WORK_CONTINUE,
+	WORK_PAUSE,
+} from './constants';
 import type {Timer} from './timer';
 
 declare global {
@@ -15,16 +20,14 @@ if (globalThis._oscarpalmer_timers == null) {
 }
 
 document.addEventListener('visibilitychange', () => {
-	if (document.hidden) {
-		for (const timer of activeTimers) {
-			hiddenTimers.add(timer);
-			timer.pause();
-		}
-	} else {
-		for (const timer of hiddenTimers) {
-			timer.continue();
-		}
+	const from = document.hidden ? activeTimers : hiddenTimers;
+	const method = document.hidden ? WORK_PAUSE : WORK_CONTINUE;
+	const to = document.hidden ? hiddenTimers : activeTimers;
 
-		hiddenTimers.clear();
+	for (const timer of from) {
+		timer[method]();
+		to.add(timer);
 	}
+
+	from.clear();
 });

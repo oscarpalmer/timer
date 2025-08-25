@@ -1,12 +1,17 @@
 import {noop} from '@oscarpalmer/atoms/function';
-import {destroyedMessage, milliseconds, startedMessage} from './constants';
+import {
+	destroyedMessage,
+	milliseconds,
+	startedMessage,
+	TYPE_WHEN,
+} from './constants';
 import {getValidNumber} from './get';
 import './global';
 import {TimerTrace, type WhenOptions, type WhenState} from './models';
 import {Timer} from './timer';
 
 class When {
-	private readonly $timer = 'when';
+	private readonly $timer = TYPE_WHEN;
 	private readonly state: WhenState = {
 		promise: undefined as never,
 		rejecter: undefined as never,
@@ -40,7 +45,7 @@ class When {
 	 * Get the timer's origin _(if debugging is enabled)_
 	 */
 	get trace(): string | undefined {
-		return globalThis._oscarpalmer_timer_debug ?? false
+		return (globalThis._oscarpalmer_timer_debug ?? false)
 			? this.state.timer?.trace
 			: undefined;
 	}
@@ -56,7 +61,7 @@ class When {
 		let result = false;
 
 		this.state.timer = new Timer(
-			'when',
+			TYPE_WHEN,
 			{
 				callback(): void {
 					try {

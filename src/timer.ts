@@ -1,4 +1,11 @@
 import {noop} from '@oscarpalmer/atoms/function';
+import {
+	WORK_CONTINUE,
+	WORK_PAUSE,
+	WORK_RESTART,
+	WORK_START,
+	WORK_STOP,
+} from './constants';
 import type {
 	TimerOptions,
 	TimerState,
@@ -37,7 +44,7 @@ export class Timer {
 	 * Get the timer's origin _(if debugging is enabled)_
 	 */
 	get trace(): string | undefined {
-		return globalThis._oscarpalmer_timer_debug ?? false
+		return (globalThis._oscarpalmer_timer_debug ?? false)
 			? this.state.trace
 			: undefined;
 	}
@@ -70,7 +77,7 @@ export class Timer {
 	 * Continue running the timer _(if it's paused)_
 	 */
 	continue(): Timer {
-		return this.#work('continue');
+		return this.#work(WORK_CONTINUE);
 	}
 
 	/**
@@ -101,28 +108,28 @@ export class Timer {
 	 * Pause the timer _(if it's running)_
 	 */
 	pause(): Timer {
-		return this.#work('pause');
+		return this.#work(WORK_PAUSE);
 	}
 
 	/**
 	 * Restart the timer _(or start it, if it's not running)_
 	 */
 	restart(): Timer {
-		return this.#work('restart');
+		return this.#work(WORK_RESTART);
 	}
 
 	/**
 	 * Start the timer _(if it's not running)_
 	 */
 	start(): Timer {
-		return this.#work('start');
+		return this.#work(WORK_START);
 	}
 
 	/**
 	 * Stop the timer _(if it's running)_
 	 */
 	stop(): Timer {
-		return this.#work('stop');
+		return this.#work(WORK_STOP);
 	}
 
 	#work(type: WorkHandlerType): Timer {

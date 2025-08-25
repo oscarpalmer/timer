@@ -33,10 +33,10 @@ test('wait', async () =>
 			values.five += 5;
 		}, 500);
 
-		wait(() => {
+		setTimeout(() => {
 			expect(one.active).toBe(true);
 			expect(globalThis._oscarpalmer_timer_debug).toBeOneOf([false, undefined]);
-			// expect(globalThis._oscarpalmer_timers?.length).toBeOneOf([0, undefined]);
+			expect(globalThis._oscarpalmer_timers?.length).toBeOneOf([0, undefined]);
 			expect(one.trace).toBeUndefined();
 
 			two.stop();
@@ -51,9 +51,9 @@ test('wait', async () =>
 			globalThis._oscarpalmer_timer_debug = true;
 		}, 20);
 
-		wait(() => {
+		setTimeout(() => {
 			expect(globalThis._oscarpalmer_timer_debug).toBe(true);
-			// expect(globalThis._oscarpalmer_timers?.length).toBe(2);
+			expect(globalThis._oscarpalmer_timers?.length).toBe(3);
 			expect(one.trace).not.toBeUndefined();
 
 			three.restart();
@@ -61,16 +61,22 @@ test('wait', async () =>
 
 			four.pause();
 			four.pause();
+
+			five.start();
+			five.start();
 		}, 40);
 
-		wait(() => {
+		setTimeout(() => {
 			expect(four.paused).toBe(true);
 
 			four.continue();
 			four.continue();
 		}, 60);
 
-		wait(() => {
+		setTimeout(() => {
+			expect(globalThis._oscarpalmer_timer_debug).toBe(true);
+			expect(globalThis._oscarpalmer_timers?.length).toBe(0);
+
 			expect(one.active).toBe(false);
 			expect(values.one).toBe(1);
 

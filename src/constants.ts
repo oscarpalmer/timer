@@ -1,4 +1,4 @@
-import type {WorkHandlerType} from './models';
+import type {TimerType, WorkHandlerType} from './models';
 import type {Timer} from './timer';
 
 function calculate(): Promise<number> {
@@ -38,11 +38,6 @@ function calculate(): Promise<number> {
 export const activeTimers = new Set<Timer>();
 
 /**
- * A set of types that allow work to begin
- */
-export const beginTypes = new Set<WorkHandlerType>(['continue', 'start']);
-
-/**
  * Buffer value to use when evaluating if a specific time is within a certain range
  */
 export const intervalBuffer = 5;
@@ -53,30 +48,24 @@ export const intervalBuffer = 5;
 export const destroyedMessage = 'Timer has already been destroyed';
 
 /**
- * A set of types that allow work to end
- */
-export const endTypes = new Set<WorkHandlerType>(['pause', 'stop']);
-
-/**
- * A set of types that allow work to end or restart
- */
-export const endOrRestartTypes = new Set<WorkHandlerType>([
-	'pause',
-	'restart',
-	'stop',
-]);
-
-/**
  * A set of timers that were paused due to the document being hidden
  */
 export const hiddenTimers = new Set<Timer>();
-
-export const pauseTypes = new Set<WorkHandlerType>(['continue', 'pause']);
 
 /**
  * Message to show when a when-timer is started
  */
 export const startedMessage = 'Timer has already been started';
+
+export const TYPE_REPEAT: TimerType = 'repeat';
+export const TYPE_WAIT: TimerType = 'wait';
+export const TYPE_WHEN: TimerType = 'when';
+
+export const WORK_CONTINUE: WorkHandlerType = 'continue';
+export const WORK_PAUSE: WorkHandlerType = 'pause';
+export const WORK_RESTART: WorkHandlerType = 'restart';
+export const WORK_START: WorkHandlerType = 'start';
+export const WORK_STOP: WorkHandlerType = 'stop';
 
 //
 

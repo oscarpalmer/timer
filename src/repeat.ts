@@ -1,4 +1,4 @@
-import {milliseconds} from './constants';
+import {milliseconds, TYPE_REPEAT} from './constants';
 import {getCallback, getValidNumber} from './get';
 import './global';
 import {type RepeatOptions, TimerTrace} from './models';
@@ -12,7 +12,7 @@ export function repeat(
 	options?: Partial<RepeatOptions>,
 ): Timer {
 	return new Timer(
-		'repeat',
+		TYPE_REPEAT,
 		{
 			callback: getCallback(callback),
 			trace: new TimerTrace().stack,

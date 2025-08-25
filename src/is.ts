@@ -1,4 +1,5 @@
 import type {PlainObject} from '@oscarpalmer/atoms/models';
+import {TYPE_REPEAT, TYPE_WAIT, TYPE_WHEN} from './constants';
 import type {Timer} from './timer';
 import type {When} from './when';
 
@@ -10,26 +11,26 @@ function is(names: string[], value: unknown) {
  * Is the value a repeating timer?
  */
 export function isRepeated(value: unknown): value is Timer {
-	return is(['repeat'], value);
+	return is([TYPE_REPEAT], value);
 }
 
 /**
  * Is the value a timer?
  */
 export function isTimer(value: unknown): value is Timer {
-	return is(['repeat', 'wait'], value);
+	return is([TYPE_REPEAT, TYPE_WAIT], value);
 }
 
 /**
  * Is the value a waiting timer?
  */
 export function isWaited(value: unknown): value is Timer {
-	return is(['wait'], value);
+	return is([TYPE_WAIT], value);
 }
 
 /**
  * Is the value a conditional timer?
  */
 export function isWhen(value: unknown): value is When {
-	return is(['when'], value) && typeof (value as When).then === 'function';
+	return is([TYPE_WHEN], value) && typeof (value as When).then === 'function';
 }
