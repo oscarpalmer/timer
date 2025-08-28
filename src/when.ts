@@ -1,5 +1,6 @@
 import {noop} from '@oscarpalmer/atoms/function';
 import {
+	defaultTimeout,
 	destroyedMessage,
 	milliseconds,
 	startedMessage,
@@ -12,6 +13,7 @@ import {Timer} from './timer';
 
 class When {
 	private readonly $timer = TYPE_WHEN;
+
 	private readonly state: WhenState = {
 		promise: undefined as never,
 		rejecter: undefined as never,
@@ -93,7 +95,7 @@ class When {
 				},
 				count: getValidNumber(options?.count),
 				interval: getValidNumber(options?.interval, milliseconds),
-				timeout: getValidNumber(options?.timeout),
+				timeout: getValidNumber(options?.timeout, defaultTimeout),
 			},
 			false,
 		);

@@ -32,6 +32,10 @@ function calculate(): Promise<number> {
 	});
 }
 
+//
+
+export const defaultTimeout = 30_000;
+
 /**
  * A set of all active timers
  */

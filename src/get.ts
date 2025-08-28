@@ -6,7 +6,9 @@ export function getCallback(value: unknown): GenericCallback {
 }
 
 export function getValidNumber(value: unknown, defaultValue?: number): number {
-	return typeof value === 'number' && value > (defaultValue ?? 0)
-		? value
-		: defaultValue ?? 0;
+	return typeof value === 'number'
+		? value > 0
+			? value
+			: 0
+		: (defaultValue ?? 0);
 }

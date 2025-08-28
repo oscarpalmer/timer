@@ -16,7 +16,7 @@
 		"dts-bundle-generator": "^9.5",
 		"glob": "^11",
 		"jsdom": "^26.1",
-		"rollup": "^4.47",
+		"rollup": "^4.49",
 		"tslib": "^2.8",
 		"typescript": "^5.9",
 		"vite": "npm:rolldown-vite@latest",
@@ -95,5 +95,5 @@
 	},
 	"type": "module",
 	"types": "types/index.d.cts",
-	"version": "0.34.0"
+	"version": "0.35.0"
 }
