@@ -46,3 +46,30 @@ test('repeat', () =>
 			done();
 		}, 500);
 	}));
+
+	test('timeout', () => new Promise<void>(done => {
+		let error: unknown;
+		let value = 0;
+
+		repeat(() => {
+			value += 1;
+		}, {
+			count: 100,
+			timeout: 100,
+		});
+
+		repeat(() => {}, {
+			count: 100,
+			timeout: 100,
+			onTimeout() {
+				error = new Error('timeout');
+			},
+		});
+
+		setTimeout(() => {
+			expect(error).toBeInstanceOf(Error);
+			expect(value).toBeLessThan(100);
+
+			done();
+		}, 250);
+	}));

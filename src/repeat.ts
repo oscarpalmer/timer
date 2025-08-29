@@ -19,10 +19,10 @@ export function repeat(
 		},
 		{
 			onAfter: getCallback(options?.onAfter),
-			onError: undefined,
+			onError: getCallback(options?.onTimeout),
 			count: getValidNumber(options?.count),
 			interval: getValidNumber(options?.interval, milliseconds),
-			timeout: 0,
+			timeout: getValidNumber(options?.timeout),
 		},
 		true,
 	);

@@ -1,12 +1,11 @@
 import {noop} from '@oscarpalmer/atoms/function';
 import {
-	defaultTimeout,
 	destroyedMessage,
 	milliseconds,
 	startedMessage,
 	TYPE_WHEN,
 } from './constants';
-import {getValidNumber} from './get';
+import {getValidNumber, getValidTimeout} from './get';
 import './global';
 import {TimerTrace, type WhenOptions, type WhenState} from './models';
 import {Timer} from './timer';
@@ -95,7 +94,7 @@ class When {
 				},
 				count: getValidNumber(options?.count),
 				interval: getValidNumber(options?.interval, milliseconds),
-				timeout: getValidNumber(options?.timeout, defaultTimeout),
+				timeout: getValidTimeout(options?.timeout),
 			},
 			false,
 		);
