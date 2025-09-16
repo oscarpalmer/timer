@@ -1,4 +1,4 @@
-import type {PlainObject} from '@oscarpalmer/atoms/models';
+import type {PlainObject} from '@oscarpalmer/atoms';
 import {TYPE_REPEAT, TYPE_WAIT, TYPE_WHEN} from './constants';
 import type {Timer} from './timer';
 import type {When} from './when';

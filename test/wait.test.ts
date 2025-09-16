@@ -110,7 +110,6 @@ test('wait', async () =>
 		}, 500);
 	}));
 
-
 test(
 	'long',
 	async () =>

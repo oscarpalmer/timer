@@ -4,80 +4,57 @@
 		"url": "https://oscarpalmer.se"
 	},
 	"dependencies": {
-		"@oscarpalmer/atoms": "^0.106"
+		"@oscarpalmer/atoms": "^0.109"
 	},
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
 		"@biomejs/biome": "^2.2",
 		"@rollup/plugin-node-resolve": "^16",
 		"@rollup/plugin-typescript": "^12.1",
-		"@types/node": "^24.3",
+		"@types/node": "^24.5",
 		"@vitest/coverage-istanbul": "^3.2",
-		"dts-bundle-generator": "^9.5",
-		"glob": "^11",
-		"jsdom": "^26.1",
-		"rollup": "^4.49",
+		"jsdom": "^27",
+		"rollup": "^4.50",
 		"tslib": "^2.8",
 		"typescript": "^5.9",
 		"vite": "npm:rolldown-vite@latest",
 		"vitest": "^3.2"
 	},
 	"exports": {
+		"./package.json": "./package.json",
 		".": {
-			"import": {
-				"types": "./types/index.d.ts",
-				"default": "./dist/index.js"
-			},
-			"require": {
-				"types": "./types/index.d.cts",
-				"default": "./dist/index.cjs"
-			}
+			"types": "./types/index.d.ts",
+			"default": "./dist/index.js"
 		},
 		"./delay": {
-			"import": {
-				"types": "./types/delay.d.ts",
-				"default": "./dist/delay.js"
-			},
-			"require": {
-				"types": "./types/delay.d.cts",
-				"default": "./dist/delay.cjs"
-			}
+			"types": "./types/delay.d.ts",
+			"default": "./dist/delay.js"
 		},
 		"./repeat": {
-			"import": {
-				"types": "./types/repeat.d.ts",
-				"default": "./dist/repeat.js"
-			},
-			"require": {
-				"types": "./types/repeat.d.cts",
-				"default": "./dist/repeat.cjs"
-			}
+			"types": "./types/repeat.d.ts",
+			"default": "./dist/repeat.js"
 		},
 		"./wait": {
-			"import": {
-				"types": "./types/wait.d.ts",
-				"default": "./dist/wait.js"
-			},
-			"require": {
-				"types": "./types/wait.d.cts",
-				"default": "./dist/wait.cjs"
-			}
+			"types": "./types/wait.d.ts",
+			"default": "./dist/wait.js"
 		},
 		"./when": {
-			"import": {
-				"types": "./types/when.d.ts",
-				"default": "./dist/when.js"
-			},
-			"require": {
-				"types": "./types/when.d.cts",
-				"default": "./dist/when.cjs"
-			}
+			"types": "./types/when.d.ts",
+			"default": "./dist/when.js"
 		}
 	},
-	"files": ["dist", "src", "types"],
-	"keywords": ["timer", "setTimeout", "setInterval", "requestAnimationFrame"],
+	"files": [
+		"dist",
+		"src",
+		"types"
+	],
+	"keywords": [
+		"timer",
+		"setTimeout",
+		"setInterval",
+		"requestAnimationFrame"
+	],
 	"license": "MIT",
-	"main": "dist/index.cjs",
 	"module": "dist/index.js",
 	"name": "@oscarpalmer/timer",
 	"repository": {
@@ -85,15 +62,16 @@
 		"url": "git+https://github.com/oscarpalmer/timer.git"
 	},
 	"scripts": {
-		"build": "npm run clean && npm run build:js && npm run rollup && npm run types",
+		"build": "npm run clean && npm run build:js && npm run rollup:build && npx tsc",
 		"build:js": "npx vite build",
 		"clean": "rm -rf ./dist && rm -rf ./types && rm -f ./tsconfig.tsbuildinfo",
-		"rollup": "npx rollup -c",
+		"rollup:build": "npx rollup -c",
+		"rollup:watch": "npx rollup -c --watch",
 		"test": "npx vitest --coverage",
 		"types": "npx tsc && npx dts-bundle-generator --config ./dts.config.cts --silent",
 		"watch": "npx vite build --watch"
 	},
 	"type": "module",
-	"types": "types/index.d.cts",
-	"version": "0.36.0"
+	"types": "types/index.d.ts",
+	"version": "0.37.0"
 }

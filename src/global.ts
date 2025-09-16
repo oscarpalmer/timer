@@ -19,6 +19,7 @@ if (globalThis._oscarpalmer_timers == null) {
 	});
 }
 
+/* istanbul ignore next */
 document.addEventListener('visibilitychange', () => {
 	const from = document.hidden ? activeTimers : hiddenTimers;
 	const method = document.hidden ? WORK_PAUSE : WORK_CONTINUE;
