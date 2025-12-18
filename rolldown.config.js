@@ -6,6 +6,6 @@ export default defineConfig({
 	},
 	input: './src/index.ts',
 	output: {
-		file: './dist/toretto.full.js',
+		file: './dist/timer.full.js',
 	},
 });

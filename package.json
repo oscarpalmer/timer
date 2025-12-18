@@ -4,7 +4,7 @@
 		"url": "https://oscarpalmer.se"
 	},
 	"dependencies": {
-		"@oscarpalmer/atoms": "^0.109"
+		"@oscarpalmer/atoms": "^0.115"
 	},
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
@@ -70,5 +70,5 @@
 	},
 	"type": "module",
 	"types": "types/index.d.ts",
-	"version": "0.38.0"
+	"version": "0.38.1"
 }
