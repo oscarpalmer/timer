@@ -36,24 +36,24 @@ const repeated = new Timer(repeatedCallback, 10);
 
 When creating a _Timer_, either with the new `new`-keyword or using the functions, you can configure the timer with a few parameters:
 
-|Parameter|Description|
-|--------:|:----------|
-|`callback`|Callback function to be invoked for each run that are __required__ for all timers.<br>For more information on callbacks, please read [the callbacks section](#callbacks).|
-|`count`|How many times the timer should run.<br>If no value is provided, it will default to `1` when using the `new`-keyword and the `wait`-method, but throws an error for the `repeat`-method.|
-|`time`|How many milliseconds between each invokations of the provided callback.<br>Defaults to `0`, which is not really _0_ milliseconds, but close enough :wink:|
-|`after`|A callback to run after the timer finishes, both when cancelled and completed.<br>If _count_ is greater than `1` and _after_ __is not__ `undefined`, a function is expected.|
+|  Parameter | Description                                                                                                                                                                              |
+| ---------: | :--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `callback` | Callback function to be invoked for each run that are **required** for all timers.<br>For more information on callbacks, please read [the callbacks section](#callbacks).                |
+|    `count` | How many times the timer should run.<br>If no value is provided, it will default to `1` when using the `new`-keyword and the `wait`-method, but throws an error for the `repeat`-method. |
+|     `time` | How many milliseconds between each invokations of the provided callback.<br>Defaults to `0`, which is not really _0_ milliseconds, but close enough :wink:                               |
+|    `after` | A callback to run after the timer finishes, both when cancelled and completed.<br>If _count_ is greater than `1` and _after_ **is not** `undefined`, a function is expected.             |
 
 ## Methods and properties
 
 An instance of _Timer_ also has a few helpful methods and properties:
 
-|Name|Type|Description|
-|---:|----|:----------|
-|`active`|_Property_|A `boolean` value to check if the timer is running|
-|`finished`|_Property_|A `boolean` value to check if the timer was able to finish|
-|`start()`|_Method_|Starts the timer.<br>Necessary when creating a timer using the class syntax _(e.g. `new Waited...`)_, but helpful when the timer needs to be started at other times, as well.|
-|`stop()`|_Method_|Stops the timer|
-|`restart()`|_Method_|Restarts the timer|
+|        Name | Type       | Description                                                                                                                                                                   |
+| ----------: | ---------- | :---------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+|    `active` | _Property_ | A `boolean` value to check if the timer is running                                                                                                                            |
+|  `finished` | _Property_ | A `boolean` value to check if the timer was able to finish                                                                                                                    |
+|   `start()` | _Method_   | Starts the timer.<br>Necessary when creating a timer using the class syntax _(e.g. `new Waited...`)_, but helpful when the timer needs to be started at other times, as well. |
+|    `stop()` | _Method_   | Stops the timer                                                                                                                                                               |
+| `restart()` | _Method_   | Restarts the timer                                                                                                                                                            |
 
 ## Callbacks
 

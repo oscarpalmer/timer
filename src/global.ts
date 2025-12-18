@@ -1,9 +1,4 @@
-import {
-	activeTimers,
-	hiddenTimers,
-	WORK_CONTINUE,
-	WORK_PAUSE,
-} from './constants';
+import {TIMERS_ACTIVE, TIMERS_HIDDEN, WORK_CONTINUE, WORK_PAUSE} from './constants';
 import type {Timer} from './timer';
 
 declare global {
@@ -14,16 +9,16 @@ declare global {
 if (globalThis._oscarpalmer_timers == null) {
 	Object.defineProperty(globalThis, '_oscarpalmer_timers', {
 		get() {
-			return globalThis._oscarpalmer_timer_debug ? [...activeTimers] : [];
+			return globalThis._oscarpalmer_timer_debug ? [...TIMERS_ACTIVE] : [];
 		},
 	});
 }
 
 /* istanbul ignore next */
 document.addEventListener('visibilitychange', () => {
-	const from = document.hidden ? activeTimers : hiddenTimers;
+	const from = document.hidden ? TIMERS_ACTIVE : TIMERS_HIDDEN;
 	const method = document.hidden ? WORK_PAUSE : WORK_CONTINUE;
-	const to = document.hidden ? hiddenTimers : activeTimers;
+	const to = document.hidden ? TIMERS_HIDDEN : TIMERS_ACTIVE;
 
 	for (const timer of from) {
 		timer[method]();

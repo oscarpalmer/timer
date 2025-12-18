@@ -12,7 +12,7 @@ test('when: basic', () =>
 			value += 1;
 		}, 125);
 
-		when(() => value > 0).then(() => {
+		when(() => value > 0).start(() => {
 			expect(value).toEqual(1);
 		});
 
@@ -32,7 +32,7 @@ test('when: basic', () =>
 			what.stop();
 		}, 175);
 
-		what.then(null, () => {
+		what.start(null, () => {
 			stopped = true;
 		});
 
@@ -44,7 +44,7 @@ test('when: basic', () =>
 
 		when(() => value > 1, {
 			timeout: 250,
-		}).then(null, () => {
+		}).start(null, () => {
 			expect(stopped).toBe(true);
 			expect(value).toEqual(1);
 
@@ -69,7 +69,7 @@ test('when: pause & continue', () =>
 			interval: 25,
 		});
 
-		what.then(() => {
+		what.start(() => {
 			expect(what.active).toBe(false);
 			expect(what.destroyed).toBe(true);
 			expect(what.paused).toBe(false);
@@ -106,7 +106,7 @@ test('when: timeout', () =>
 			count: 1000,
 			interval: 25,
 			timeout: 25,
-		}).then(
+		}).start(
 			() => {
 				error = false;
 			},
@@ -129,7 +129,7 @@ test('failing condition', () =>
 		when(() => {
 			throw new Error();
 		})
-			.then(
+			.start(
 				() => {
 					error = false;
 				},

@@ -8,17 +8,16 @@
 	},
 	"description": "A better solution for timeout- and interval-based timers.",
 	"devDependencies": {
-		"@biomejs/biome": "^2.2",
-		"@rollup/plugin-node-resolve": "^16",
-		"@rollup/plugin-typescript": "^12.1",
-		"@types/node": "^24.5",
-		"@vitest/coverage-istanbul": "^3.2",
-		"jsdom": "^27",
-		"rollup": "^4.50",
+		"@types/node": "^25",
+		"@vitest/coverage-istanbul": "^4",
+		"jsdom": "^27.3",
+		"oxfmt": "^0.18",
+		"oxlint": "^1.33",
+		"rolldown": "1.0.0-beta.55",
 		"tslib": "^2.8",
 		"typescript": "^5.9",
-		"vite": "npm:rolldown-vite@latest",
-		"vitest": "^3.2"
+		"vite": "8.0.0-beta.2",
+		"vitest": "^4"
 	},
 	"exports": {
 		"./package.json": "./package.json",
@@ -49,10 +48,10 @@
 		"types"
 	],
 	"keywords": [
-		"timer",
-		"setTimeout",
+		"requestAnimationFrame",
 		"setInterval",
-		"requestAnimationFrame"
+		"setTimeout",
+		"timer"
 	],
 	"license": "MIT",
 	"module": "dist/index.js",
@@ -62,16 +61,14 @@
 		"url": "git+https://github.com/oscarpalmer/timer.git"
 	},
 	"scripts": {
-		"build": "npm run clean && npm run build:js && npm run rollup:build && npx tsc",
-		"build:js": "npx vite build",
+		"build": "npm run clean && npx vite build && npm run rolldown:build && npx tsc",
 		"clean": "rm -rf ./dist && rm -rf ./types && rm -f ./tsconfig.tsbuildinfo",
-		"rollup:build": "npx rollup -c",
-		"rollup:watch": "npx rollup -c --watch",
+		"rolldown:build": "npx rolldown -c",
+		"rolldown:watch": "npx rolldown -c --watch",
 		"test": "npx vitest --coverage",
-		"types": "npx tsc && npx dts-bundle-generator --config ./dts.config.cts --silent",
 		"watch": "npx vite build --watch"
 	},
 	"type": "module",
 	"types": "types/index.d.ts",
-	"version": "0.37.0"
+	"version": "0.38.0"
 }

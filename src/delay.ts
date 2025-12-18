@@ -1,22 +1,21 @@
-import {intervalBuffer, milliseconds} from './constants';
+import {BUFFER_INTERVAL, MILLISECONDS} from './constants';
 import {getValidNumber} from './get';
 
 /**
- * Create a delayed promise that resolves after a certain amount of time _(in milliseconds; defaults to screen refresh rate)_
+ * Create a delayed promise that resolves after a certain amount of time
+ * @param time How long to wait for _(in milliseconds; defaults to screen refresh rate)_
+ * @returns A promise that resolves after the delay
  */
 export function delay(time?: number): Promise<void> {
 	return new Promise(resolve => {
-		const interval = getValidNumber(time, milliseconds);
+		const interval = getValidNumber(time, MILLISECONDS);
 
 		let start: DOMHighResTimeStamp;
 
 		function step(now: DOMHighResTimeStamp) {
 			start ??= now;
 
-			if (
-				interval === milliseconds ||
-				now - start >= interval - intervalBuffer
-			) {
+			if (interval === MILLISECONDS || now - start >= interval - BUFFER_INTERVAL) {
 				resolve();
 			} else {
 				requestAnimationFrame(step);

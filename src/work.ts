@@ -1,7 +1,7 @@
 import {
-	activeTimers,
-	intervalBuffer,
-	milliseconds,
+	TIMERS_ACTIVE,
+	BUFFER_INTERVAL,
+	MILLISECONDS,
 	TYPE_WAIT,
 	WORK_CONTINUE,
 	WORK_PAUSE,
@@ -9,12 +9,7 @@ import {
 	WORK_START,
 	WORK_STOP,
 } from './constants';
-import type {
-	TimerOptions,
-	TimerState,
-	WorkHandlerTimer,
-	WorkHandlerType,
-} from './models';
+import type {TimerOptions, TimerState, WorkHandlerTimer, WorkHandlerType} from './models';
 import type {Timer} from './timer';
 
 function finish(
@@ -25,7 +20,7 @@ function finish(
 ): void {
 	cancelAnimationFrame(state.frame as never);
 
-	activeTimers.delete(timer.instance);
+	TIMERS_ACTIVE.delete(timer.instance);
 
 	state.active = false;
 	state.elapsed = 0;
@@ -89,10 +84,7 @@ function run(
 			return;
 		}
 
-		if (
-			options.interval === milliseconds ||
-			state.elapsed >= options.interval - intervalBuffer
-		) {
+		if (options.interval === MILLISECONDS || state.elapsed >= options.interval - BUFFER_INTERVAL) {
 			if (options.count > -1) {
 				(state.callback as (index: number) => void)(state.index);
 			}
@@ -102,10 +94,7 @@ function run(
 			state.elapsed = 0;
 			state.index += 1;
 
-			if (
-				options.count === -1 ||
-				(options.count > 0 && state.index >= options.count)
-			) {
+			if (options.count === -1 || (options.count > 0 && state.index >= options.count)) {
 				finish(timer, state, options, true);
 
 				return;
@@ -124,23 +113,19 @@ function setState(type: WorkHandlerType, state: TimerState): void {
 	state.total = pausable ? state.total : 0;
 }
 
-export function stop(
-		timer: WorkHandlerTimer,
-		state: TimerState,
-		options: TimerOptions,
-	): Timer {
-		cancelAnimationFrame(state.frame as never);
+export function stop(timer: WorkHandlerTimer, state: TimerState, options: TimerOptions): Timer {
+	cancelAnimationFrame(state.frame as never);
 
-		activeTimers.delete(timer.instance);
+	TIMERS_ACTIVE.delete(timer.instance);
 
-		options.onAfter?.(false);
+	options.onAfter?.(false);
 
-		state.active = !stop;
-		state.frame = undefined;
-		state.paused = false;
+	state.active = !stop;
+	state.frame = undefined;
+	state.paused = false;
 
-		return timer.instance;
-	}
+	return timer.instance;
+}
 
 export function work(
 	type: WorkHandlerType,
@@ -171,7 +156,7 @@ export function work(
 		return pause(timer, state);
 	}
 
-	activeTimers.add(timer.instance);
+	TIMERS_ACTIVE.add(timer.instance);
 
 	const runner = run(timer, state, options);
 

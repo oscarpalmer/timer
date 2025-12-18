@@ -1,10 +1,5 @@
 import {noop} from '@oscarpalmer/atoms/function';
-import {
-	destroyedMessage,
-	milliseconds,
-	startedMessage,
-	TYPE_WHEN,
-} from './constants';
+import {MESSAGE_DESTROYED, MILLISECONDS, MESSAGE_STARTED, TYPE_WHEN} from './constants';
 import {getValidNumber, getValidTimeout} from './get';
 import './global';
 import {TimerTrace, type WhenOptions, type WhenState} from './models';
@@ -46,9 +41,7 @@ class When {
 	 * Get the timer's origin _(if debugging is enabled)_
 	 */
 	get trace(): string | undefined {
-		return (globalThis._oscarpalmer_timer_debug ?? false)
-			? this.state.timer?.trace
-			: undefined;
+		return (globalThis._oscarpalmer_timer_debug ?? false) ? this.state.timer?.trace : undefined;
 	}
 
 	constructor(condition: () => boolean, options?: Partial<WhenOptions>) {
@@ -93,7 +86,7 @@ class When {
 					this.destroy();
 				},
 				count: getValidNumber(options?.count),
-				interval: getValidNumber(options?.interval, milliseconds),
+				interval: getValidNumber(options?.interval, MILLISECONDS),
 				timeout: getValidTimeout(options?.timeout),
 			},
 			false,
@@ -133,6 +126,30 @@ class When {
 	}
 
 	/**
+	 * Start the timer
+	 * @param resolve Optional resolve callback
+	 * @param reject Optional reject callback
+	 * @returns Promise that resolves when the condition is met
+	 */
+	start(resolve?: (() => void) | null, reject?: (() => void) | null): Promise<void> {
+		const {state} = this;
+
+		if (state.timer == null) {
+			throw new Error(MESSAGE_DESTROYED);
+		}
+
+		if (state.started) {
+			throw new Error(MESSAGE_STARTED);
+		}
+
+		state.started = true;
+
+		state.timer.start();
+
+		return state.promise.then(resolve ?? noop, reject ?? noop);
+	}
+
+	/**
 	 * Stops the timer _(if it was running)_
 	 */
 	stop(): When {
@@ -142,38 +159,25 @@ class When {
 	}
 
 	/**
-	 * Starts the timer and returns a promise that resolves when the condition is met
+	 * Start the timer
+	 * @deprecated Use `start()` instead
+	 * @param resolve Optional resolve callback
+	 * @param reject Optional reject callback
+	 * @returns Promise that resolves when the condition is met
 	 */
-	// biome-ignore lint/suspicious/noThenProperty: returning a promise-like object, so it's ok ;)
-	then(
-		resolve?: (() => void) | null,
-		reject?: (() => void) | null,
-	): Promise<void> {
-		const {state} = this;
-
-		if (state.timer == null) {
-			throw new Error(destroyedMessage);
-		}
-
-		if (state.started) {
-			throw new Error(startedMessage);
-		}
-
-		state.started = true;
-
-		state.timer.start();
-
-		return state.promise.then(resolve ?? noop, reject ?? noop);
+	// oxlint-disable-next-line no-thenable: Returning a promise-like object, so it's ok ;)
+	then(resolve?: (() => void) | null, reject?: (() => void) | null): Promise<void> {
+		return this.start(resolve, reject);
 	}
 }
 
 /**
  * Create a conditional timer
+ * @param condition Condition to check
+ * @param options Timer options
+ * @returns Timer instance
  */
-export function when(
-	condition: () => boolean,
-	options?: Partial<WhenOptions>,
-): When {
+export function when(condition: () => boolean, options?: Partial<WhenOptions>): When {
 	return new When(condition, options);
 }
 

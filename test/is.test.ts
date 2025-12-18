@@ -1,13 +1,5 @@
 import {expect, test} from 'vitest';
-import {
-	isRepeated,
-	isTimer,
-	isWaited,
-	isWhen,
-	repeat,
-	wait,
-	when,
-} from '../src';
+import {isRepeated, isTimer, isWaited, isWhen, repeat, wait, when} from '../src';
 
 test('is', () =>
 	new Promise<void>(done => {

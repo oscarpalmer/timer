@@ -1,21 +1,10 @@
 import {noop} from '@oscarpalmer/atoms/function';
-import {
-	WORK_CONTINUE,
-	WORK_PAUSE,
-	WORK_RESTART,
-	WORK_START,
-	WORK_STOP,
-} from './constants';
-import type {
-	TimerOptions,
-	TimerState,
-	TimerType,
-	WorkHandlerType,
-} from './models';
+import {WORK_CONTINUE, WORK_PAUSE, WORK_RESTART, WORK_START, WORK_STOP} from './constants';
+import type {TimerOptions, TimerState, TimerType, WorkHandlerType} from './models';
 import {stop, work} from './work';
 
 export class Timer {
-	private declare readonly $timer: TimerType;
+	declare private readonly $timer: TimerType;
 
 	protected readonly state: TimerState;
 
@@ -44,9 +33,7 @@ export class Timer {
 	 * Get the timer's origin _(if debugging is enabled)_
 	 */
 	get trace(): string | undefined {
-		return (globalThis._oscarpalmer_timer_debug ?? false)
-			? this.state.trace
-			: undefined;
+		return (globalThis._oscarpalmer_timer_debug ?? false) ? this.state.trace : undefined;
 	}
 
 	constructor(
