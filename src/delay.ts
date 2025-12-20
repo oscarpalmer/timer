@@ -1,4 +1,4 @@
-import {BUFFER_INTERVAL, MILLISECONDS} from './constants';
+import {BUFFER_INTERVAL, FRAME_RATE_MS} from './constants';
 import {getValidNumber} from './get';
 
 /**
@@ -8,14 +8,14 @@ import {getValidNumber} from './get';
  */
 export function delay(time?: number): Promise<void> {
 	return new Promise(resolve => {
-		const interval = getValidNumber(time, MILLISECONDS);
+		const interval = getValidNumber(time, FRAME_RATE_MS);
 
 		let start: DOMHighResTimeStamp;
 
 		function step(now: DOMHighResTimeStamp) {
 			start ??= now;
 
-			if (interval === MILLISECONDS || now - start >= interval - BUFFER_INTERVAL) {
+			if (interval === FRAME_RATE_MS || now - start >= interval - BUFFER_INTERVAL) {
 				resolve();
 			} else {
 				requestAnimationFrame(step);

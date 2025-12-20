@@ -1,7 +1,7 @@
 import {
 	TIMERS_ACTIVE,
 	BUFFER_INTERVAL,
-	MILLISECONDS,
+	FRAME_RATE_MS,
 	TYPE_WAIT,
 	WORK_CONTINUE,
 	WORK_PAUSE,
@@ -84,7 +84,7 @@ function run(
 			return;
 		}
 
-		if (options.interval === MILLISECONDS || state.elapsed >= options.interval - BUFFER_INTERVAL) {
+		if (options.interval === FRAME_RATE_MS || state.elapsed >= options.interval - BUFFER_INTERVAL) {
 			if (options.count > -1) {
 				(state.callback as (index: number) => void)(state.index);
 			}

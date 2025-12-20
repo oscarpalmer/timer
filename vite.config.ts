@@ -21,7 +21,7 @@ export default defineConfig({
 		minify: false,
 		outDir: './dist',
 		rollupOptions: {
-			external: ['@oscarpalmer/atoms/function'],
+			external: ['@oscarpalmer/atoms/frame-rate', '@oscarpalmer/atoms/function'],
 			input: Object.fromEntries(files),
 			output: {
 				preserveModules: true,

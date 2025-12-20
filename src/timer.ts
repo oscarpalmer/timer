@@ -42,7 +42,9 @@ export class Timer {
 		protected readonly options: TimerOptions,
 		start: boolean,
 	) {
-		this.$timer = type;
+		Object.defineProperty(this, '$timer', {
+			value: type,
+		});
 
 		this.state = {
 			...state,

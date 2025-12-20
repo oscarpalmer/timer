@@ -1,12 +1,12 @@
 import {noop} from '@oscarpalmer/atoms/function';
-import {MESSAGE_DESTROYED, MILLISECONDS, MESSAGE_STARTED, TYPE_WHEN} from './constants';
+import {FRAME_RATE_MS, MESSAGE_DESTROYED, MESSAGE_STARTED, TYPE_WHEN} from './constants';
 import {getValidNumber, getValidTimeout} from './get';
 import './global';
 import {TimerTrace, type WhenOptions, type WhenState} from './models';
 import {Timer} from './timer';
 
 class When {
-	private readonly $timer = TYPE_WHEN;
+	private declare readonly $timer: string;
 
 	private readonly state: WhenState = {
 		promise: undefined as never,
@@ -45,6 +45,10 @@ class When {
 	}
 
 	constructor(condition: () => boolean, options?: Partial<WhenOptions>) {
+		Object.defineProperty(this, '$timer', {
+			value: TYPE_WHEN,
+		});
+
 		const {state} = this;
 
 		state.promise = new Promise<void>((resolve, reject) => {
@@ -86,7 +90,7 @@ class When {
 					this.destroy();
 				},
 				count: getValidNumber(options?.count),
-				interval: getValidNumber(options?.interval, MILLISECONDS),
+				interval: getValidNumber(options?.interval, FRAME_RATE_MS),
 				timeout: getValidTimeout(options?.timeout),
 			},
 			false,

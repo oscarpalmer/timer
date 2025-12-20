@@ -7,5 +7,6 @@ export default defineConfig({
 	input: './src/index.ts',
 	output: {
 		file: './dist/timer.full.js',
+		minify: 'dce-only',
 	},
 });

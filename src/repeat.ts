@@ -1,4 +1,4 @@
-import {MILLISECONDS, TYPE_REPEAT} from './constants';
+import {FRAME_RATE_MS, TYPE_REPEAT} from './constants';
 import {getCallback, getValidNumber} from './get';
 import './global';
 import {type RepeatOptions, TimerTrace} from './models';
@@ -21,7 +21,7 @@ export function repeat(callback: (index: number) => void, options?: Partial<Repe
 			onAfter: getCallback(options?.onAfter),
 			onError: getCallback(options?.onTimeout),
 			count: getValidNumber(options?.count),
-			interval: getValidNumber(options?.interval, MILLISECONDS),
+			interval: getValidNumber(options?.interval, FRAME_RATE_MS),
 			timeout: getValidNumber(options?.timeout),
 		},
 		true,
