@@ -6,7 +6,7 @@ import {TimerTrace, type WhenOptions, type WhenState} from './models';
 import {Timer} from './timer';
 
 class When {
-	private declare readonly $timer: string;
+	declare private readonly $timer: string;
 
 	private readonly state: WhenState = {
 		promise: undefined as never,
