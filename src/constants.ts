@@ -1,4 +1,3 @@
-import FRAME_RATE_MS from '@oscarpalmer/atoms/frame-rate';
 import type {TimerType, WorkHandlerType} from './models';
 import type {Timer} from './timer';
 
@@ -44,5 +43,3 @@ export const WORK_RESTART: WorkHandlerType = 'restart';
 export const WORK_START: WorkHandlerType = 'start';
 
 export const WORK_STOP: WorkHandlerType = 'stop';
-
-export {FRAME_RATE_MS};

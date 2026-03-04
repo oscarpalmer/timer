@@ -1,5 +1,5 @@
 import {noop} from '@oscarpalmer/atoms/function';
-import {FRAME_RATE_MS, MESSAGE_DESTROYED, MESSAGE_STARTED, TYPE_WHEN} from './constants';
+import {MESSAGE_DESTROYED, MESSAGE_STARTED, TYPE_WHEN} from './constants';
 import {getValidNumber, getValidTimeout} from './get';
 import './global';
 import {TimerTrace, type WhenOptions, type WhenState} from './models';
@@ -90,7 +90,7 @@ class When {
 					this.destroy();
 				},
 				count: getValidNumber(options?.count),
-				interval: getValidNumber(options?.interval, FRAME_RATE_MS),
+				interval: getValidNumber(options?.interval),
 				timeout: getValidTimeout(options?.timeout),
 			},
 			false,

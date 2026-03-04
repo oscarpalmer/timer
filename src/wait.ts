@@ -1,4 +1,4 @@
-import {FRAME_RATE_MS, TYPE_WAIT} from './constants';
+import {TYPE_WAIT} from './constants';
 import {getCallback, getValidNumber} from './get';
 import './global';
 import {TimerTrace} from './models';
@@ -20,7 +20,7 @@ export function wait(callback: () => void, time?: number): Timer {
 			onAfter: undefined,
 			onError: undefined,
 			count: -1,
-			interval: getValidNumber(time, FRAME_RATE_MS),
+			interval: getValidNumber(time),
 			timeout: 0,
 		},
 		true,

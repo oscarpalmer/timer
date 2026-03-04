@@ -15,13 +15,13 @@ export default defineConfig({
 	base: './',
 	build: {
 		lib: {
-			entry: [],
+			entry: Object.fromEntries(files),
 			formats: ['es'],
 		},
 		minify: false,
 		outDir: './dist',
 		rollupOptions: {
-			external: ['@oscarpalmer/atoms/frame-rate', '@oscarpalmer/atoms/function'],
+			external: id => id.includes('@oscarpalmer/atoms'),
 			input: Object.fromEntries(files),
 			output: {
 				preserveModules: true,
