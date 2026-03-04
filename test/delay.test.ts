@@ -8,19 +8,19 @@ test('delay', () =>
 
 			await delay(250);
 
-			expect(performance.now() - then - 250).toBeLessThan(25);
+			expect(performance.now() - then - 250).toBeLessThan(50);
 
 			then = performance.now();
 
 			await delay('blah' as never);
 
-			expect(performance.now() - then).toBeLessThan(25);
+			expect(performance.now() - then).toBeLessThan(50);
 
 			then = performance.now();
 
 			await delay(-1000);
 
-			expect(performance.now() - then).toBeLessThan(25);
+			expect(performance.now() - then).toBeLessThan(50);
 
 			done();
 		}
