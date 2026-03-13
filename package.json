@@ -1,53 +1,7 @@
 {
-	"author": {
-		"name": "Oscar Palmér",
-		"url": "https://oscarpalmer.se"
-	},
-	"dependencies": {
-		"@oscarpalmer/atoms": "^0.152"
-	},
+	"name": "@oscarpalmer/timer",
+	"version": "0.42.0",
 	"description": "A better solution for timeout- and interval-based timers.",
-	"devDependencies": {
-		"@types/node": "^25.3",
-		"@vitest/coverage-istanbul": "^4",
-		"dts-bundle-generator": "^9.5",
-		"jsdom": "^28.1",
-		"oxfmt": "^0.36",
-		"oxlint": "^1.51",
-		"rolldown": "1.0.0-rc.6",
-		"tslib": "^2.8",
-		"typescript": "^5.9",
-		"vite": "8.0.0-beta.16",
-		"vitest": "^4"
-	},
-	"exports": {
-		"./package.json": "./package.json",
-		".": {
-			"types": "./types/index.d.ts",
-			"default": "./dist/index.js"
-		},
-		"./delay": {
-			"types": "./types/delay.d.ts",
-			"default": "./dist/delay.js"
-		},
-		"./repeat": {
-			"types": "./types/repeat.d.ts",
-			"default": "./dist/repeat.js"
-		},
-		"./wait": {
-			"types": "./types/wait.d.ts",
-			"default": "./dist/wait.js"
-		},
-		"./when": {
-			"types": "./types/when.d.ts",
-			"default": "./dist/when.js"
-		}
-	},
-	"files": [
-		"dist",
-		"src",
-		"types"
-	],
 	"keywords": [
 		"requestAnimationFrame",
 		"setInterval",
@@ -55,21 +9,64 @@
 		"timer"
 	],
 	"license": "MIT",
-	"module": "dist/index.js",
-	"name": "@oscarpalmer/timer",
+	"author": {
+		"name": "Oscar Palmér",
+		"url": "https://oscarpalmer.se"
+	},
 	"repository": {
 		"type": "git",
 		"url": "git+https://github.com/oscarpalmer/timer.git"
 	},
+	"files": [
+		"dist",
+		"src"
+	],
+	"type": "module",
+	"module": "dist/index.mjs",
+	"types": "dist/index.d.mts",
+	"exports": {
+		"./package.json": "./package.json",
+		".": {
+			"types": "./dist/index.d.mts",
+			"default": "./dist/index.mjs"
+		},
+		"./delay": {
+			"types": "./dist/delay.d.mts",
+			"default": "./dist/delay.mjs"
+		},
+		"./repeat": {
+			"types": "./dist/repeat.d.mts",
+			"default": "./dist/repeat.mjs"
+		},
+		"./wait": {
+			"types": "./dist/wait.d.mts",
+			"default": "./dist/wait.mjs"
+		},
+		"./when": {
+			"types": "./dist/when.d.mts",
+			"default": "./dist/when.mjs"
+		}
+	},
 	"scripts": {
-		"build": "npm run clean && npx vite build && npm run rolldown:build && npx tsc && npx dts-bundle-generator --config ./dts.config.ts --silent",
-		"clean": "rm -rf ./dist && rm -rf ./types && rm -f ./tsconfig.tsbuildinfo",
-		"rolldown:build": "npx rolldown -c",
-		"rolldown:watch": "npx rolldown -c ./rolldown.config.js --watch",
-		"test": "npx vitest --coverage",
+		"build": "npx vp pack && npm run tsdown:build",
+		"tsdown:build": "npx tsdown -c ./tsdown.config.ts",
+		"tsdown:watch": "npx tsdown -c ./tsdown.config.ts --watch",
+		"test": "npx vp test run --coverage",
+		"test:leak": "npx vp test run --detect-async-leaks --coverage",
 		"watch": "npx vite build --watch"
 	},
-	"type": "module",
-	"types": "types/index.d.ts",
-	"version": "0.41.4"
+	"dependencies": {
+		"@oscarpalmer/atoms": "^0.165"
+	},
+	"devDependencies": {
+		"@types/node": "^25.5",
+		"@vitest/coverage-istanbul": "^4.1",
+		"jsdom": "^28.1",
+		"tsdown": "^0.21",
+		"typescript": "^5.9",
+		"vite": "npm:@voidzero-dev/vite-plus-core@latest",
+		"vite-plus": "latest",
+		"vitest": "npm:@voidzero-dev/vite-plus-test@latest"
+	},
+	"packageManager": "npm@11.11.1"
 }
