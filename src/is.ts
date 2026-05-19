@@ -40,5 +40,5 @@ export function isWaited(value: unknown): value is Timer {
  * @returns `true` if the value is a conditional timer
  */
 export function isWhen(value: unknown): value is When {
-	return is([TYPE_WHEN], value) && typeof (value as When).then === 'function';
+	return is([TYPE_WHEN], value) && typeof (value as When).start === 'function';
 }

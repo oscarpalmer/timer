@@ -64,7 +64,7 @@ function callback(index) {
 	// 'index' is the current step
 	// starts at 0, goes up to a maximum of count - 1
 	// for this example: 0 → 9
-};
+}
 ```
 
 When you create a repeated timer, you can also provide a callback to run when the timer stops, as below:

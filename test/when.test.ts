@@ -12,7 +12,7 @@ test('when: basic', () =>
 			value += 1;
 		}, 125);
 
-		when(() => value > 0).start(() => {
+		void when(() => value > 0).start(() => {
 			expect(value).toEqual(1);
 		});
 
@@ -32,24 +32,24 @@ test('when: basic', () =>
 			what.stop();
 		}, 175);
 
-		what.start(null, () => {
+		what.start().catch(() => {
 			stopped = true;
 		});
 
 		try {
-			what.then();
+			void what.start();
 		} catch (error) {
 			expect(error).toBeInstanceOf(Error);
 		}
 
 		when(() => value > 1, {
 			timeout: 250,
-		}).start(null, () => {
+		}).start().catch(() => {
 			expect(stopped).toBe(true);
 			expect(value).toEqual(1);
 
 			try {
-				what.then();
+				void what.start();
 			} catch (error) {
 				expect(error).toBeInstanceOf(Error);
 			}
@@ -69,7 +69,7 @@ test('when: pause & continue', () =>
 			interval: 25,
 		});
 
-		what.start(() => {
+		void what.start(() => {
 			expect(what.active).toBe(false);
 			expect(what.destroyed).toBe(true);
 			expect(what.paused).toBe(false);
@@ -110,10 +110,9 @@ test('when: timeout', () =>
 			() => {
 				error = false;
 			},
-			() => {
-				error = true;
-			},
-		);
+		).catch(() => {
+			error = true;
+		});
 
 		setTimeout(() => {
 			expect(error).toBe(true);
@@ -126,17 +125,15 @@ test('failing condition', () =>
 	new Promise<void>(done => {
 		let error: boolean | undefined;
 
-		when(() => {
+		void when(() => {
 			throw new Error();
 		})
-			.start(
-				() => {
-					error = false;
-				},
-				() => {
-					error = true;
-				},
-			)
+			.start(() => {
+				error = false;
+			})
+			.catch(() => {
+				error = true;
+			})
 			.then(() => {
 				expect(error).toBe(true);
 

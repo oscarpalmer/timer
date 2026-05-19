@@ -25,5 +25,5 @@ test('delay', () =>
 			done();
 		}
 
-		run();
+		void run();
 	}));

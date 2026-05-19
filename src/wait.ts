@@ -6,6 +6,7 @@ import {Timer} from './timer';
 
 /**
  * Create a waiting timer
+ *
  * @param callback Callback to run when the timer has finished
  * @param time How long to wait for _(in milliseconds; defaults to screen refresh rate)_
  */

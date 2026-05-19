@@ -131,11 +131,11 @@ class When {
 
 	/**
 	 * Start the timer
+	 *
 	 * @param resolve Optional resolve callback
-	 * @param reject Optional reject callback
 	 * @returns Promise that resolves when the condition is met
 	 */
-	start(resolve?: (() => void) | null, reject?: (() => void) | null): Promise<void> {
+	start(resolve?: (() => void) | null): Promise<void> {
 		const {state} = this;
 
 		if (state.timer == null) {
@@ -150,7 +150,7 @@ class When {
 
 		state.timer.start();
 
-		return state.promise.then(resolve ?? noop, reject ?? noop);
+		return state.promise.then(resolve);
 	}
 
 	/**
@@ -160,18 +160,6 @@ class When {
 		this.state.timer?.stop();
 
 		return this;
-	}
-
-	/**
-	 * Start the timer
-	 * @deprecated Use `start()` instead
-	 * @param resolve Optional resolve callback
-	 * @param reject Optional reject callback
-	 * @returns Promise that resolves when the condition is met
-	 */
-	// oxlint-disable-next-line no-thenable: Returning a promise-like object, so it's ok ;)
-	then(resolve?: (() => void) | null, reject?: (() => void) | null): Promise<void> {
-		return this.start(resolve, reject);
 	}
 }
 

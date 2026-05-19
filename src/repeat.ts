@@ -6,6 +6,7 @@ import {Timer} from './timer';
 
 /**
  * Create a repeating timer
+ *
  * @param callback Callback to run on each interval
  * @param options Timer options
  * @returns Timer instance
