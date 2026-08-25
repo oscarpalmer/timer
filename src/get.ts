@@ -1,5 +1,5 @@
-import type {GenericCallback} from '@oscarpalmer/atoms/models';
 import {noop} from '@oscarpalmer/atoms/function';
+import type {GenericCallback} from '@oscarpalmer/atoms/models';
 import {DEFAULT_TIMEOUT} from './constants';
 
 export function getCallback(value: unknown): GenericCallback {

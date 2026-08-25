@@ -1,8 +1,8 @@
 import './global';
 
-export * from './delay';
+export {delay} from './delay';
 export {isRepeated, isTimer, isWaited, isWhen} from './is';
-export * from './repeat';
-export type {Timer} from './timer';
-export * from './wait';
-export * from './when';
+export type {RepeatOptions, Timer, TimerOptions, When, WhenOptions} from './models';
+export {repeat} from './repeat';
+export {wait} from './wait';
+export {when} from './when';

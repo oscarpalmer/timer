@@ -1,135 +1,91 @@
 import {noop} from '@oscarpalmer/atoms/function';
 import {WORK_CONTINUE, WORK_PAUSE, WORK_RESTART, WORK_START, WORK_STOP} from './constants';
-import type {TimerOptions, TimerState, TimerType, WorkHandlerType} from './models';
+import type {Timer, TimerName, TimerOptions, TimerState, WorkHandlerType} from './models';
 import {stop, work} from './work';
 
-export class Timer {
-	declare private readonly $timer: TimerType;
-
-	protected readonly state: TimerState;
-
-	/**
-	 * Is the timer active?
-	 */
-	get active(): boolean {
-		return this.state.active;
-	}
-
-	/**
-	 * Is the timer destroyed?
-	 */
-	get destroyed(): boolean {
-		return this.state.destroyed;
-	}
-
-	/**
-	 * Is the timer paused?
-	 */
-	get paused(): boolean {
-		return this.state.paused;
-	}
-
-	/**
-	 * Get the timer's origin _(if debugging is enabled)_
-	 */
-	get trace(): string | undefined {
-		return (globalThis._oscarpalmer_timer_debug ?? false) ? this.state.trace : undefined;
-	}
-
-	constructor(
-		type: TimerType,
-		state: Pick<TimerState, 'callback' | 'trace'>,
-		protected readonly options: TimerOptions,
-		start: boolean,
-	) {
-		Object.defineProperty(this, '$timer', {
-			value: type,
-		});
-
-		this.state = {
-			...state,
-			active: false,
-			destroyed: false,
-			elapsed: 0,
-			frame: undefined,
-			index: 0,
-			paused: false,
-			total: 0,
-		};
-
-		if (start) {
-			this.start();
-		}
-	}
-
-	/**
-	 * Continue running the timer _(if it's paused)_
-	 */
-	continue(): Timer {
-		return this.#work(WORK_CONTINUE);
-	}
-
-	/**
-	 * Destroy the timer
-	 */
-	destroy(): void {
-		this.state.destroyed = true;
-
-		this.options.onAfter = noop;
-		this.options.onError = noop;
-		this.state.callback = noop;
-
-		if (!globalThis._oscarpalmer_timer_debug) {
-			this.state.trace = undefined;
-		}
-
-		stop(
-			{
-				instance: this,
-				type: this.$timer,
-			},
-			this.state,
-			this.options,
-		);
-	}
-
-	/**
-	 * Pause the timer _(if it's running)_
-	 */
-	pause(): Timer {
-		return this.#work(WORK_PAUSE);
-	}
-
-	/**
-	 * Restart the timer _(or start it, if it's not running)_
-	 */
-	restart(): Timer {
-		return this.#work(WORK_RESTART);
-	}
-
-	/**
-	 * Start the timer _(if it's not running)_
-	 */
-	start(): Timer {
-		return this.#work(WORK_START);
-	}
-
-	/**
-	 * Stop the timer _(if it's running)_
-	 */
-	stop(): Timer {
-		return this.#work(WORK_STOP);
-	}
-
-	#work(type: WorkHandlerType): Timer {
+export function createTimer(
+	name: TimerName,
+	pick: Pick<TimerState, 'callback' | 'trace'>,
+	options: TimerOptions,
+	start: boolean,
+): Timer {
+	function worker(type: WorkHandlerType): Timer {
 		return work(
 			type,
 			{
-				instance: this,
-				type: this.$timer,
+				name,
+				instance: instance as Timer,
 			},
-			this.state,
-			this.options,
+			state,
+			options,
 		);
 	}
+
+	const state: TimerState = {
+		...pick,
+		active: false,
+		destroyed: false,
+		elapsed: 0,
+		frame: undefined,
+		index: 0,
+		paused: false,
+		total: 0,
+	};
+
+	const instance = {
+		continue: () => worker(WORK_CONTINUE),
+		destroy: () => destroyTimer(name, instance as Timer, state, options),
+		pause: () => worker(WORK_PAUSE),
+		restart: () => worker(WORK_RESTART),
+		start: () => worker(WORK_START),
+		stop: () => worker(WORK_STOP),
+	};
+
+	Object.defineProperties(instance, {
+		$timer: {
+			enumerable: false,
+			value: name,
+		},
+		active: {
+			enumerable: true,
+			get: () => state.active,
+		},
+		destroyed: {
+			enumerable: true,
+			get: () => state.destroyed,
+		},
+		paused: {
+			enumerable: true,
+			get: () => state.paused,
+		},
+		trace: {
+			enumerable: true,
+			get: () => ((globalThis._oscarpalmer_timer_debug ?? false) ? state.trace : undefined),
+		},
+	});
+
+	if (start) {
+		instance.start();
+	}
+
+	return Object.freeze(instance) as Timer;
+}
+
+function destroyTimer(
+	name: TimerName,
+	instance: Timer,
+	state: TimerState,
+	options: TimerOptions,
+): void {
+	state.destroyed = true;
+
+	options.onAfter = noop;
+	options.onError = noop;
+	state.callback = noop;
+
+	if (!globalThis._oscarpalmer_timer_debug) {
+		state.trace = undefined;
+	}
+
+	stop({instance, name}, state, options);
 }

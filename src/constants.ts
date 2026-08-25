@@ -1,5 +1,4 @@
-import type {TimerType, WorkHandlerType} from './models';
-import type {Timer} from './timer';
+import type {Timer, TimerName, WorkHandlerType} from './models';
 
 /**
  * Buffer value to use when evaluating if a specific time is within a certain range
@@ -28,11 +27,11 @@ export const TIMERS_ACTIVE = new Set<Timer>();
  */
 export const TIMERS_HIDDEN = new Set<Timer>();
 
-export const TYPE_REPEAT: TimerType = 'repeat';
+export const TYPE_REPEAT: TimerName = 'repeat';
 
-export const TYPE_WAIT: TimerType = 'wait';
+export const TYPE_WAIT: TimerName = 'wait';
 
-export const TYPE_WHEN: TimerType = 'when';
+export const TYPE_WHEN: TimerName = 'when';
 
 export const WORK_CONTINUE: WorkHandlerType = 'continue';
 

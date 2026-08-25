@@ -1,5 +1,5 @@
 import {expect, test} from 'vitest';
-import {delay} from '../node_modules/@oscarpalmer/atoms/src/promise/delay';
+import {delay} from '../src/delay';
 
 test('delay', () =>
 	new Promise<void>(done => {

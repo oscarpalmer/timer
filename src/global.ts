@@ -1,5 +1,5 @@
 import {TIMERS_ACTIVE, TIMERS_HIDDEN, WORK_CONTINUE, WORK_PAUSE} from './constants';
-import type {Timer} from './timer';
+import type {Timer} from './models';
 
 declare global {
 	var _oscarpalmer_timer_debug: boolean | undefined;

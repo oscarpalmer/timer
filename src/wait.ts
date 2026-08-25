@@ -1,8 +1,8 @@
 import {TYPE_WAIT} from './constants';
 import {getCallback, getValidNumber} from './get';
 import './global';
-import {TimerTrace} from './models';
-import {Timer} from './timer';
+import {type Timer, TimerTrace} from './models';
+import {createTimer} from './timer';
 
 /**
  * Create a waiting timer
@@ -11,7 +11,7 @@ import {Timer} from './timer';
  * @param time How long to wait for _(in milliseconds; defaults to screen refresh rate)_
  */
 export function wait(callback: () => void, time?: number): Timer {
-	return new Timer(
+	return createTimer(
 		TYPE_WAIT,
 		{
 			callback: getCallback(callback),
@@ -27,5 +27,3 @@ export function wait(callback: () => void, time?: number): Timer {
 		true,
 	);
 }
-
-export type {Timer};

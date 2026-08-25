@@ -1,8 +1,8 @@
 import {TYPE_REPEAT} from './constants';
 import {getCallback, getValidNumber} from './get';
 import './global';
-import {type RepeatOptions, TimerTrace} from './models';
-import {Timer} from './timer';
+import {type RepeatOptions, type Timer, TimerTrace} from './models';
+import {createTimer} from './timer';
 
 /**
  * Create a repeating timer
@@ -12,7 +12,7 @@ import {Timer} from './timer';
  * @returns Timer instance
  */
 export function repeat(callback: (index: number) => void, options?: Partial<RepeatOptions>): Timer {
-	return new Timer(
+	return createTimer(
 		TYPE_REPEAT,
 		{
 			callback: getCallback(callback),
@@ -28,5 +28,3 @@ export function repeat(callback: (index: number) => void, options?: Partial<Repe
 		true,
 	);
 }
-
-export type {RepeatOptions, Timer};

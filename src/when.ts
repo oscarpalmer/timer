@@ -1,166 +1,73 @@
 import {noop} from '@oscarpalmer/atoms/function';
-import {MESSAGE_DESTROYED, MESSAGE_STARTED, TYPE_WHEN} from './constants';
+import {MESSAGE_DESTROYED, MESSAGE_STARTED, TYPE_WHEN, WORK_CONTINUE} from './constants';
 import {getValidNumber, getValidTimeout} from './get';
 import './global';
-import {TimerTrace, type WhenOptions, type WhenState} from './models';
-import {Timer} from './timer';
+import {
+	TimerTrace,
+	type When,
+	type WhenOptions,
+	type WhenState,
+	type WorkHandlerType,
+} from './models';
+import {createTimer} from './timer';
 
-class When {
-	declare private readonly $timer: string;
+function destroyWhen(state: WhenState): void {
+	state.timer?.destroy();
 
-	private readonly state: WhenState = {
-		promise: undefined as never,
-		rejecter: undefined as never,
-		resolver: undefined as never,
-		started: false,
-		timer: undefined as never,
-	};
+	state.promise = undefined as never;
+	state.resolver = noop;
+	state.rejecter = noop;
+	state.timer = undefined as never;
+}
 
-	/**
-	 * Is the timer active?
-	 */
-	get active() {
-		return this.state.timer?.active ?? false;
+function onAfter(instance: When, state: WhenState): void {
+	if (state.result) {
+		state.resolver?.();
+	} else {
+		state.rejecter?.();
 	}
 
-	/**
-	 * Is the timer destroyed?
-	 */
-	get destroyed() {
-		return this.state.timer == null;
-	}
+	instance.destroy();
+}
 
-	/**
-	 * Is the timer paused?
-	 */
-	get paused() {
-		return this.state.timer?.paused ?? false;
-	}
+function onCallback(condition: () => boolean, state: WhenState): void {
+	try {
+		if (condition()) {
+			state.result = true;
 
-	/**
-	 * Get the timer's origin _(if debugging is enabled)_
-	 */
-	get trace(): string | undefined {
-		return (globalThis._oscarpalmer_timer_debug ?? false) ? this.state.timer?.trace : undefined;
-	}
-
-	constructor(condition: () => boolean, options?: Partial<WhenOptions>) {
-		Object.defineProperty(this, '$timer', {
-			value: TYPE_WHEN,
-		});
-
-		const {state} = this;
-
-		state.promise = new Promise<void>((resolve, reject) => {
-			state.resolver = resolve;
-			state.rejecter = reject;
-		});
-
-		let result = false;
-
-		this.state.timer = new Timer(
-			TYPE_WHEN,
-			{
-				callback(): void {
-					try {
-						if (condition()) {
-							result = true;
-
-							state.timer.stop();
-						}
-					} catch {
-						state.timer.stop();
-					}
-				},
-				trace: new TimerTrace().stack,
-			},
-			{
-				onAfter: () => {
-					if (result) {
-						state.resolver?.();
-					} else {
-						state.rejecter?.();
-					}
-
-					this.destroy();
-				},
-				onError: () => {
-					state.rejecter?.();
-
-					this.destroy();
-				},
-				count: getValidNumber(options?.count),
-				interval: getValidNumber(options?.interval),
-				timeout: getValidTimeout(options?.timeout),
-			},
-			false,
-		);
-	}
-
-	/**
-	 * Continues the timer _(if it was paused)_
-	 */
-	continue(): When {
-		this.state.timer?.continue();
-
-		return this;
-	}
-
-	/**
-	 * Destroys the timer _(and stops it,if it was running)_
-	 */
-	destroy(): void {
-		const {state} = this;
-
-		state.timer?.destroy();
-
-		state.promise = undefined as never;
-		state.resolver = noop;
-		state.rejecter = noop;
-		state.timer = undefined as never;
-	}
-
-	/**
-	 * Pauses the timer _(if it was running)_
-	 */
-	pause(): When {
-		this.state.timer?.pause();
-
-		return this;
-	}
-
-	/**
-	 * Start the timer
-	 *
-	 * @param resolve Optional resolve callback
-	 * @returns Promise that resolves when the condition is met
-	 */
-	start(resolve?: (() => void) | null): Promise<void> {
-		const {state} = this;
-
-		if (state.timer == null) {
-			throw new Error(MESSAGE_DESTROYED);
+			state.timer.stop();
 		}
+	} catch {
+		state.timer.stop();
+	}
+}
 
-		if (state.started) {
-			throw new Error(MESSAGE_STARTED);
-		}
+function onError(instance: When, state: WhenState): void {
+	state.rejecter?.();
 
-		state.started = true;
+	instance.destroy();
+}
 
-		state.timer.start();
+function onWhen(type: WorkHandlerType, instance: When, state: WhenState): When {
+	state.timer?.[type]?.();
 
-		return state.promise.then(resolve);
+	return instance;
+}
+
+function startWhen(state: WhenState, resolve?: (() => void) | null): Promise<void> {
+	if (state.timer == null) {
+		throw new Error(MESSAGE_DESTROYED);
 	}
 
-	/**
-	 * Stops the timer _(if it was running)_
-	 */
-	stop(): When {
-		this.state.timer?.stop();
-
-		return this;
+	if (state.started) {
+		throw new Error(MESSAGE_STARTED);
 	}
+
+	state.started = true;
+
+	state.timer.start();
+
+	return state.promise.then(resolve);
 }
 
 /**
@@ -170,7 +77,66 @@ class When {
  * @returns Timer instance
  */
 export function when(condition: () => boolean, options?: Partial<WhenOptions>): When {
-	return new When(condition, options);
-}
+	const state: WhenState = {
+		promise: undefined as never,
+		result: false,
+		started: false,
+		timer: undefined as never,
+	};
 
-export type {When};
+	let instance: When;
+
+	state.promise = new Promise<void>((resolve, reject) => {
+		state.resolver = resolve;
+		state.rejecter = reject;
+	});
+
+	state.timer = createTimer(
+		TYPE_WHEN,
+		{
+			callback: () => onCallback(condition, state),
+			trace: new TimerTrace().stack,
+		},
+		{
+			onAfter: () => onAfter(instance, state),
+			onError: () => onError(instance, state),
+			count: getValidNumber(options?.count),
+			interval: getValidNumber(options?.interval),
+			timeout: getValidTimeout(options?.timeout),
+		},
+		false,
+	);
+
+	instance = {
+		continue: () => onWhen(WORK_CONTINUE, instance, state),
+		destroy: () => destroyWhen(state),
+		pause: () => onWhen('pause', instance, state),
+		start: (resolve?: (() => void) | null) => startWhen(state, resolve),
+		stop: () => onWhen('stop', instance, state),
+	} as When;
+
+	Object.defineProperties(instance, {
+		$timer: {
+			enumerable: false,
+			value: TYPE_WHEN,
+		},
+		active: {
+			enumerable: true,
+			get: () => state.timer?.active ?? false,
+		},
+		destroyed: {
+			enumerable: true,
+			get: () => state.timer == null,
+		},
+		paused: {
+			enumerable: true,
+			get: () => state.timer?.paused ?? false,
+		},
+		trace: {
+			enumerable: true,
+			get: () => ((globalThis._oscarpalmer_timer_debug ?? false) ? state.timer?.trace : undefined),
+		},
+	});
+
+	return Object.freeze(instance) as When;
+}

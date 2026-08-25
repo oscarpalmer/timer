@@ -1,7 +1,6 @@
 import type {PlainObject} from '@oscarpalmer/atoms/models';
 import {TYPE_REPEAT, TYPE_WAIT, TYPE_WHEN} from './constants';
-import type {Timer} from './timer';
-import type {When} from './when';
+import type {Timer, When} from './models';
 
 function is(names: string[], value: unknown) {
 	return names.includes((value as PlainObject)?.$timer as string);

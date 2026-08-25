@@ -1,6 +1,6 @@
 import {
-	TIMERS_ACTIVE,
 	BUFFER_INTERVAL,
+	TIMERS_ACTIVE,
 	TYPE_WAIT,
 	WORK_CONTINUE,
 	WORK_PAUSE,
@@ -8,8 +8,7 @@ import {
 	WORK_START,
 	WORK_STOP,
 } from './constants';
-import type {TimerOptions, TimerState, WorkHandlerTimer, WorkHandlerType} from './models';
-import type {Timer} from './timer';
+import type {Timer, TimerOptions, TimerState, WorkHandlerTimer, WorkHandlerType} from './models';
 
 function finish(
 	timer: WorkHandlerTimer,
@@ -25,7 +24,7 @@ function finish(
 	state.elapsed = 0;
 	state.frame = undefined;
 
-	if (timer.type === TYPE_WAIT) {
+	if (timer.name === TYPE_WAIT) {
 		state.callback();
 	} else {
 		options.onAfter?.(success);
