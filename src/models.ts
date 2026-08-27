@@ -111,9 +111,9 @@ export type TimerStates = {
 	 */
 	active: Set<TimerState>;
 	/**
-	 * A set of timers that were programmatically paused due to the document being hidden
+	 * A set of timers that were paused due to the document being hidden
 	 */
-	hidden: Set<TimerState>;
+	hidden: Set<WeakRef<TimerState>>;
 };
 
 export class TimerTrace extends Error {
