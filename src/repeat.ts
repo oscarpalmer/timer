@@ -1,5 +1,5 @@
 import {TYPE_REPEAT} from './constants';
-import {getCallback, getValidNumber} from './get';
+import {getCallback, getValidNumber} from './misc';
 import './global';
 import {type RepeatOptions, type Timer, TimerTrace} from './models';
 import {createTimer} from './timer';

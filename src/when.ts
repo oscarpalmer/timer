@@ -1,6 +1,6 @@
 import {noop} from '@oscarpalmer/atoms/function';
-import {MESSAGE_DESTROYED, MESSAGE_STARTED, TYPE_WHEN, WORK_CONTINUE} from './constants';
-import {getValidNumber, getValidTimeout} from './get';
+import {MESSAGE_STARTED, TYPE_WHEN, WORK_CONTINUE, WORK_PAUSE, WORK_STOP} from './constants';
+import {getValidNumber, getValidTimeout} from './misc';
 import './global';
 import {
 	TimerTrace,
@@ -11,23 +11,12 @@ import {
 } from './models';
 import {createTimer} from './timer';
 
-function destroyWhen(state: WhenState): void {
-	state.timer?.destroy();
-
-	state.promise = undefined as never;
-	state.resolver = noop;
-	state.rejecter = noop;
-	state.timer = undefined as never;
-}
-
-function onAfter(instance: When, state: WhenState): void {
+function onAfter(state: WhenState): void {
 	if (state.result) {
 		state.resolver?.();
 	} else {
 		state.rejecter?.();
 	}
-
-	instance.destroy();
 }
 
 function onCallback(condition: () => boolean, state: WhenState): void {
@@ -42,12 +31,6 @@ function onCallback(condition: () => boolean, state: WhenState): void {
 	}
 }
 
-function onError(instance: When, state: WhenState): void {
-	state.rejecter?.();
-
-	instance.destroy();
-}
-
 function onWhen(type: WorkHandlerType, instance: When, state: WhenState): When {
 	state.timer?.[type]?.();
 
@@ -55,10 +38,6 @@ function onWhen(type: WorkHandlerType, instance: When, state: WhenState): When {
 }
 
 function startWhen(state: WhenState, resolve?: (() => void) | null): Promise<void> {
-	if (state.timer == null) {
-		throw new Error(MESSAGE_DESTROYED);
-	}
-
 	if (state.started) {
 		throw new Error(MESSAGE_STARTED);
 	}
@@ -98,8 +77,8 @@ export function when(condition: () => boolean, options?: Partial<WhenOptions>): 
 			trace: new TimerTrace().stack,
 		},
 		{
-			onAfter: () => onAfter(instance, state),
-			onError: () => onError(instance, state),
+			onAfter: () => onAfter(state),
+			onError: () => state.rejecter?.(),
 			count: getValidNumber(options?.count),
 			interval: getValidNumber(options?.interval),
 			timeout: getValidTimeout(options?.timeout),
@@ -109,10 +88,10 @@ export function when(condition: () => boolean, options?: Partial<WhenOptions>): 
 
 	instance = {
 		continue: () => onWhen(WORK_CONTINUE, instance, state),
-		destroy: () => destroyWhen(state),
-		pause: () => onWhen('pause', instance, state),
-		start: (resolve?: (() => void) | null) => startWhen(state, resolve),
-		stop: () => onWhen('stop', instance, state),
+		destroy: noop,
+		pause: () => onWhen(WORK_PAUSE, instance, state),
+		start: (resolve: never) => startWhen(state, resolve),
+		stop: () => onWhen(WORK_STOP, instance, state),
 	} as When;
 
 	Object.defineProperties(instance, {
@@ -122,15 +101,15 @@ export function when(condition: () => boolean, options?: Partial<WhenOptions>): 
 		},
 		active: {
 			enumerable: true,
-			get: () => state.timer?.active ?? false,
+			get: () => state.timer.active,
 		},
 		destroyed: {
 			enumerable: true,
-			get: () => state.timer == null,
+			value: false,
 		},
 		paused: {
 			enumerable: true,
-			get: () => state.timer?.paused ?? false,
+			get: () => state.timer.paused,
 		},
 		trace: {
 			enumerable: true,

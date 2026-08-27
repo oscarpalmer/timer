@@ -1,5 +1,5 @@
 import {TYPE_WAIT} from './constants';
-import {getCallback, getValidNumber} from './get';
+import {getCallback, getValidNumber} from './misc';
 import './global';
 import {type Timer, TimerTrace} from './models';
 import {createTimer} from './timer';

@@ -1,5 +1,4 @@
-/// <reference types="vitest" />
-import {defineConfig} from 'vite';
+import {defineConfig} from 'vite-plus';
 import rules from './node_modules/@oscarpalmer/atoms/plugin/rules.js';
 
 export default defineConfig({

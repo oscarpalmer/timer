@@ -1,4 +1,4 @@
-import type {Timer, TimerName, WorkHandlerType} from './models';
+import type {TimerName, TimerStates, WorkHandlerType} from './models';
 
 /**
  * Buffer value to use when evaluating if a specific time is within a certain range
@@ -8,24 +8,14 @@ export const BUFFER_INTERVAL = 5;
 export const DEFAULT_TIMEOUT = 30_000;
 
 /**
- * Message to show when a when-timer is destroyed
- */
-export const MESSAGE_DESTROYED = 'Timer has already been destroyed';
-
-/**
  * Message to show when a when-timer is started
  */
 export const MESSAGE_STARTED = 'Timer has already been started';
 
-/**
- * A set of all active timers
- */
-export const TIMERS_ACTIVE = new Set<Timer>();
-
-/**
- * A set of timers that were paused due to the document being hidden
- */
-export const TIMERS_HIDDEN = new Set<Timer>();
+export const STATES: TimerStates = {
+	active: new Set(),
+	hidden: new Set(),
+};
 
 export const TYPE_REPEAT: TimerName = 'repeat';
 

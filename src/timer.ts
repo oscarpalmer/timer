@@ -1,7 +1,7 @@
 import {noop} from '@oscarpalmer/atoms/function';
 import {WORK_CONTINUE, WORK_PAUSE, WORK_RESTART, WORK_START, WORK_STOP} from './constants';
-import type {Timer, TimerName, TimerOptions, TimerState, WorkHandlerType} from './models';
-import {stop, work} from './work';
+import type {Timer, TimerName, TimerOptions, TimerState} from './models';
+import {work} from './work';
 
 export function createTimer(
 	name: TimerName,
@@ -9,36 +9,27 @@ export function createTimer(
 	options: TimerOptions,
 	start: boolean,
 ): Timer {
-	function worker(type: WorkHandlerType): Timer {
-		return work(
-			type,
-			{
-				name,
-				instance: instance as Timer,
-			},
-			state,
-			options,
-		);
-	}
-
 	const state: TimerState = {
 		...pick,
+		name,
+		options,
 		active: false,
 		destroyed: false,
 		elapsed: 0,
 		frame: undefined,
 		index: 0,
 		paused: false,
+		timer: undefined as never,
 		total: 0,
 	};
 
 	const instance = {
-		continue: () => worker(WORK_CONTINUE),
-		destroy: () => destroyTimer(name, instance as Timer, state, options),
-		pause: () => worker(WORK_PAUSE),
-		restart: () => worker(WORK_RESTART),
-		start: () => worker(WORK_START),
-		stop: () => worker(WORK_STOP),
+		continue: () => work(WORK_CONTINUE, state),
+		destroy: noop,
+		pause: () => work(WORK_PAUSE, state),
+		restart: () => work(WORK_RESTART, state),
+		start: () => work(WORK_START, state),
+		stop: () => work(WORK_STOP, state),
 	};
 
 	Object.defineProperties(instance, {
@@ -52,7 +43,7 @@ export function createTimer(
 		},
 		destroyed: {
 			enumerable: true,
-			get: () => state.destroyed,
+			value: false,
 		},
 		paused: {
 			enumerable: true,
@@ -64,28 +55,11 @@ export function createTimer(
 		},
 	});
 
+	state.timer = Object.freeze(instance) as Timer;
+
 	if (start) {
-		instance.start();
+		state.timer.start();
 	}
 
-	return Object.freeze(instance) as Timer;
-}
-
-function destroyTimer(
-	name: TimerName,
-	instance: Timer,
-	state: TimerState,
-	options: TimerOptions,
-): void {
-	state.destroyed = true;
-
-	options.onAfter = noop;
-	options.onError = noop;
-	state.callback = noop;
-
-	if (!globalThis._oscarpalmer_timer_debug) {
-		state.trace = undefined;
-	}
-
-	stop({instance, name}, state, options);
+	return state.timer;
 }

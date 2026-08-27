@@ -32,6 +32,8 @@ export type Timer = {
 
 	/**
 	 * Is the timer destroyed?
+	 * 
+	 * @deprecated Timers take care of their own cleanup; this always returns `false`
 	 */
 	get destroyed(): boolean;
 
@@ -52,6 +54,8 @@ export type Timer = {
 
 	/**
 	 * Destroy the timer
+	 * 
+	 * @deprecated Timers take care of their own cleanup
 	 */
 	destroy(): void;
 
@@ -91,11 +95,25 @@ export type TimerState = {
 	callback: () => void;
 	destroyed: boolean;
 	elapsed: number;
-	frame: number | undefined;
+	frame?: number;
 	index: number;
+	name: TimerName;
+	options: TimerOptions;
 	paused: boolean;
+	timer: Timer;
 	total: number;
-	trace: string | undefined;
+	trace?: string;
+};
+
+export type TimerStates = {
+	/**
+	 * A set of all active timers
+	 */
+	active: Set<TimerState>;
+	/**
+	 * A set of timers that were programmatically paused due to the document being hidden
+	 */
+	hidden: Set<TimerState>;
 };
 
 export class TimerTrace extends Error {
@@ -114,6 +132,8 @@ export type When = {
 
 	/**
 	 * Is the timer destroyed?
+	 * 
+	 * @deprecated Timers take care of their own cleanup; this always returns `false`
 	 */
 	get destroyed(): boolean;
 
@@ -134,6 +154,8 @@ export type When = {
 
 	/**
 	 * Destroys the timer _(and stops it,if it was running)_
+	 * 
+	 * @deprecated Timers take care of their own cleanup
 	 */
 	destroy(): void;
 

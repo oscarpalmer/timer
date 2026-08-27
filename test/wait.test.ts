@@ -1,6 +1,5 @@
 import {expect, test} from 'vitest';
 import '../src/global';
-import {noop} from '@oscarpalmer/atoms/function';
 import {wait} from '../src/wait';
 
 test('wait', async () =>
@@ -53,7 +52,7 @@ test('wait', async () =>
 
 		setTimeout(() => {
 			expect(globalThis._oscarpalmer_timer_debug).toBe(true);
-			expect(globalThis._oscarpalmer_timers?.length).toBe(3);
+			expect(globalThis._oscarpalmer_timers?.length).toBe(4);
 			expect(one.trace).not.toBeUndefined();
 
 			three.restart();
@@ -75,7 +74,7 @@ test('wait', async () =>
 
 		setTimeout(() => {
 			expect(globalThis._oscarpalmer_timer_debug).toBe(true);
-			expect(globalThis._oscarpalmer_timers?.length).toBe(0);
+			expect(globalThis._oscarpalmer_timers?.length).toBe(1);
 
 			expect(one.active).toBe(false);
 			expect(values.one).toBe(1);
@@ -90,14 +89,14 @@ test('wait', async () =>
 			expect(four.paused).toBe(false);
 			expect(values.four).toBe(4);
 
-			expect(five.active).toBe(false);
-			expect(five.destroyed).toBe(true);
+			expect(five.active).toBe(true);
+			expect(five.destroyed).toBe(false);
 			expect(values.five).toBe(0);
 
-			expect(five.trace).toBe(undefined);
+			expect(five.trace).toBeTypeOf('string');
 
 			done();
-		}, 500);
+		}, 450);
 	}));
 
 test(
@@ -107,10 +106,12 @@ test(
 			const now = performance.now();
 
 			wait(() => {
-				expect(performance.now() - now).toBeGreaterThanOrEqual(5000);
+				const elapsed = performance.now() - now;
+
+				expect(elapsed >= 1480 && elapsed <= 1520).toBe(true);
 
 				done();
-			}, 5000);
+			}, 1500);
 		}),
-	5500,
+	2000,
 );

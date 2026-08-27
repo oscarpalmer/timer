@@ -1,6 +1,6 @@
 {
 	"name": "@oscarpalmer/timer",
-	"version": "0.44.0",
+	"version": "0.45.0",
 	"description": "A better solution for timeout- and interval-based timers.",
 	"keywords": [
 		"requestAnimationFrame",
@@ -29,10 +29,6 @@
 		".": {
 			"types": "./dist/index.d.mts",
 			"default": "./dist/index.mjs"
-		},
-		"./delay": {
-			"types": "./dist/delay.d.mts",
-			"default": "./dist/delay.mjs"
 		},
 		"./models": {
 			"types": "./dist/models.d.mts",
@@ -64,7 +60,7 @@
 	},
 	"devDependencies": {
 		"@oxlint/plugins": "^1.80",
-		"@types/node": "^26.3",
+		"@types/node": "^26.4",
 		"@vitest/coverage-istanbul": "^4.1",
 		"jsdom": "^30",
 		"tsdown": "^0.22",

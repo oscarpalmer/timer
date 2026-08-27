@@ -71,9 +71,9 @@ test('when: pause & continue', () =>
 
 		void what.start(() => {
 			expect(what.active).toBe(false);
-			expect(what.destroyed).toBe(true);
+			expect(what.destroyed).toBe(false);
 			expect(what.paused).toBe(false);
-			expect(what.trace).toBeUndefined();
+			expect(what.trace).toBeTypeOf('string');
 			expect(finished).toBe(true);
 
 			done();
@@ -82,7 +82,7 @@ test('when: pause & continue', () =>
 		wait(() => {
 			expect(what.active).toBe(true);
 			expect(what.paused).toBe(false);
-			expect(what.trace).not.toBeUndefined();
+			expect(what.trace).toBeTypeOf('string');
 
 			what.pause();
 
