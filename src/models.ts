@@ -100,6 +100,7 @@ export type TimerState = {
 	name: TimerName;
 	options: TimerOptions;
 	paused: boolean;
+	reference?: WeakRef<TimerState>;
 	timer: Timer;
 	total: number;
 	trace?: string;

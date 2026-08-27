@@ -31,12 +31,11 @@ function ignore(type: WorkHandlerType, state: TimerState): boolean {
 		return type === WORK_PAUSE || type === WORK_START;
 	}
 
-	return state.active && type === WORK_START;
+	return state.active && (type === WORK_CONTINUE || type === WORK_START);
 }
 
 function run(state: TimerState): (now: DOMHighResTimeStamp) => void {
 	let last: DOMHighResTimeStamp | undefined;
-	let start: DOMHighResTimeStamp | undefined;
 
 	return function step(now: DOMHighResTimeStamp): void {
 		if (!state.active) {
@@ -44,7 +43,6 @@ function run(state: TimerState): (now: DOMHighResTimeStamp) => void {
 		}
 
 		last ??= now;
-		start ??= now;
 
 		const difference = now - last;
 
@@ -65,8 +63,6 @@ function run(state: TimerState): (now: DOMHighResTimeStamp) => void {
 			if (state.options.count > -1) {
 				(state.callback as (index: number) => void)(state.index);
 			}
-
-			start = now;
 
 			state.elapsed = 0;
 			state.index += 1;
@@ -127,7 +123,7 @@ export function work(type: WorkHandlerType, state: TimerState, hide?: boolean): 
 	state.active = true;
 	state.paused = type === WORK_PAUSE;
 
-	updateStates(state, state.paused ? ((hide ?? false) ? 'hidden' : undefined) : 'active');
+	updateStates(state, state.paused ? hide : false);
 
 	if (state.paused) {
 		return state.timer;

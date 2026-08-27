@@ -39,7 +39,7 @@ export function createTimer(
 		},
 		active: {
 			enumerable: true,
-			get: () => state.active,
+			get: () => state.active && !state.paused,
 		},
 		destroyed: {
 			enumerable: true,

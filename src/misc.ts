@@ -1,7 +1,7 @@
 import {noop} from '@oscarpalmer/atoms/function';
 import type {GenericCallback} from '@oscarpalmer/atoms/models';
 import {DEFAULT_TIMEOUT, STATES, WORK_CONTINUE, WORK_PAUSE} from './constants';
-import type {TimerStates, TimerState} from './models';
+import type {TimerState} from './models';
 import {work} from './work';
 
 export function getCallback(value: unknown): GenericCallback {
@@ -26,24 +26,30 @@ export function onVisibilityChange(): void {
 	for (const stored of from) {
 		const state = stored instanceof WeakRef ? stored.deref() : stored;
 
-		if (state != null) {
+		if (state == null) {
+			from.delete(stored as never);
+		} else {
 			work(type, state, true);
 		}
 	}
 }
 
-export function updateStates(state: TimerState, key?: keyof TimerStates): void {
+export function updateStates(state: TimerState, hide?: boolean): void {
 	STATES.active.delete(state);
 
-	const hidden = [...STATES.hidden].find(stored => stored.deref() === state);
-
 	/* istanbul ignore next */
-	if (hidden != null) {
-		STATES.hidden.delete(hidden);
+	STATES.hidden.delete(state.reference!);
+
+	if (hide == null) {
+		return;
 	}
 
-	if (key != null) {
-		/* istanbul ignore next */
-		STATES[key].add((key === 'hidden' ? new WeakRef(state) : state) as never);
+	/* istanbul ignore if */
+	if (hide) {
+		state.reference ??= new WeakRef(state);
+
+		STATES.hidden.add(state.reference);
+	} else {
+		STATES.active.add(state);
 	}
 }
