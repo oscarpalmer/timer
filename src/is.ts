@@ -8,8 +8,9 @@ function is(names: string[], value: unknown) {
 
 /**
  * Is the value a repeating timer?
+ * 
  * @param value Value to check
- * @returns `true` if the value is a repeating timer
+ * @returns `true` if the value is a repeating timer, otherwise `false`
  */
 export function isRepeated(value: unknown): value is Timer {
 	return is([TYPE_REPEAT], value);
@@ -17,8 +18,9 @@ export function isRepeated(value: unknown): value is Timer {
 
 /**
  * Is the value a timer?
+ * 
  * @param value Value to check
- * @returns `true` if the value is a timer
+ * @returns `true` if the value is a timer, otherwise `false`
  */
 export function isTimer(value: unknown): value is Timer {
 	return is([TYPE_REPEAT, TYPE_WAIT], value);
@@ -26,8 +28,9 @@ export function isTimer(value: unknown): value is Timer {
 
 /**
  * Is the value a waiting timer?
+ * 
  * @param value Value to check
- * @returns `true` if the value is a waiting timer
+ * @returns `true` if the value is a waiting timer, otherwise `false`
  */
 export function isWaited(value: unknown): value is Timer {
 	return is([TYPE_WAIT], value);
@@ -35,8 +38,9 @@ export function isWaited(value: unknown): value is Timer {
 
 /**
  * Is the value a conditional timer?
+ * 
  * @param value Value to check
- * @returns `true` if the value is a conditional timer
+ * @returns `true` if the value is a conditional timer, otherwise `false`
  */
 export function isWhen(value: unknown): value is When {
 	return is([TYPE_WHEN], value) && typeof (value as When).start === 'function';

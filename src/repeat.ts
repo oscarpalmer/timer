@@ -9,7 +9,7 @@ import {createTimer} from './timer';
  *
  * @param callback Callback to run on each interval
  * @param options Timer options
- * @returns Timer instance
+ * @returns Repeating timer
  */
 export function repeat(callback: (index: number) => void, options?: Partial<RepeatOptions>): Timer {
 	return createTimer(

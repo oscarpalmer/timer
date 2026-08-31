@@ -1,6 +1,6 @@
 {
 	"name": "@oscarpalmer/timer",
-	"version": "0.46.0",
+	"version": "0.47.0",
 	"description": "A better solution for timeout- and interval-based timers.",
 	"keywords": [
 		"requestAnimationFrame",
@@ -30,6 +30,10 @@
 			"types": "./dist/index.d.mts",
 			"default": "./dist/index.mjs"
 		},
+		"./is": {
+			"types": "./dist/is.d.mts",
+			"default": "./dist/is.mjs"
+		},
 		"./models": {
 			"types": "./dist/models.d.mts",
 			"default": "./dist/models.mjs"
@@ -56,7 +60,7 @@
 		"watch": "npx vite build --watch"
 	},
 	"dependencies": {
-		"@oscarpalmer/atoms": "^0.193"
+		"@oscarpalmer/atoms": "^0.195"
 	},
 	"devDependencies": {
 		"@oxlint/plugins": "^1.80",

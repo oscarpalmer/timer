@@ -9,6 +9,7 @@ import {createTimer} from './timer';
  *
  * @param callback Callback to run when the timer has finished
  * @param time How long to wait for _(in milliseconds; defaults to screen refresh rate)_
+ * @returns Waiting timer
  */
 export function wait(callback: () => void, time?: number): Timer {
 	return createTimer(
