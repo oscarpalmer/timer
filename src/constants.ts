@@ -7,6 +7,8 @@ export const BUFFER_INTERVAL = 5;
 
 export const DEFAULT_TIMEOUT = 30_000;
 
+export const GLOBAL_NAME = '_oscarpalmer_timers';
+
 /**
  * Message to show when a when-timer is started
  */
