@@ -4,6 +4,8 @@ import {DEFAULT_TIMEOUT, STATES, WORK_CONTINUE, WORK_PAUSE} from './constants';
 import type {TimerState} from './models';
 import {work} from './work';
 
+// #region Functions
+
 export function getCallback(value: unknown): GenericCallback {
 	return typeof value === 'function' ? (value as GenericCallback) : noop;
 }
@@ -53,3 +55,16 @@ export function updateStates(state: TimerState, hide?: boolean): void {
 		STATES.active.add(state);
 	}
 }
+
+// #endregion
+
+// #region Variables
+
+/* istanbul ignore next */
+export const startTimer =
+	'requestAnimationFrame' in globalThis ? requestAnimationFrame : setTimeout;
+
+/* istanbul ignore next */
+export const stopTimer = 'cancelAnimationFrame' in globalThis ? cancelAnimationFrame : clearTimeout;
+
+// #endregion

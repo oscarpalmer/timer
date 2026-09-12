@@ -2,6 +2,8 @@ import {GLOBAL_NAME, STATES} from './constants';
 import {onVisibilityChange} from './misc';
 import type {Timer} from './models';
 
+// #region Types
+
 declare global {
 	var _oscarpalmer_timer_debug: boolean | undefined;
 	/**
@@ -9,6 +11,10 @@ declare global {
 	 */
 	var _oscarpalmer_timers: Timer[] | undefined;
 }
+
+// #endregion
+
+// #region Initialization
 
 /* istanbul ignore next */
 if (!(GLOBAL_NAME in globalThis)) {
@@ -21,4 +27,9 @@ if (!(GLOBAL_NAME in globalThis)) {
 	});
 }
 
-document.addEventListener('visibilitychange', onVisibilityChange);
+/* istanbul ignore next */
+if ('document' in globalThis) {
+	document.addEventListener('visibilitychange', onVisibilityChange);
+}
+
+// #endregion

@@ -1,65 +1,124 @@
-import {noop} from '@oscarpalmer/atoms/function';
-import {WORK_CONTINUE, WORK_PAUSE, WORK_RESTART, WORK_START, WORK_STOP} from './constants';
+import {SYMBOL, WORK_CONTINUE, WORK_PAUSE, WORK_RESTART, WORK_START, WORK_STOP} from './constants';
 import type {Timer, TimerName, TimerOptions, TimerState} from './models';
 import {work} from './work';
 
-export function createTimer(
+// #region Types
+
+type InternalTimer = {
+	[SYMBOL]: TimerState;
+} & Timer;
+
+// #endregion
+
+// #region Instances
+
+function Timer(
+	this: any,
 	name: TimerName,
-	pick: Pick<TimerState, 'callback' | 'trace'>,
+	state: Pick<TimerState, 'callback' | 'trace'>,
 	options: TimerOptions,
 	start: boolean,
-): Timer {
-	const state: TimerState = {
-		...pick,
-		name,
-		options,
-		active: false,
-		destroyed: false,
-		elapsed: 0,
-		frame: undefined,
-		index: 0,
-		paused: false,
-		timer: undefined as never,
-		total: 0,
-	};
-
-	const instance = {
-		continue: () => work(WORK_CONTINUE, state),
-		destroy: noop,
-		pause: () => work(WORK_PAUSE, state),
-		restart: () => work(WORK_RESTART, state),
-		start: () => work(WORK_START, state),
-		stop: () => work(WORK_STOP, state),
-	};
-
-	Object.defineProperties(instance, {
-		$timer: {
-			enumerable: false,
-			value: name,
-		},
-		active: {
-			enumerable: true,
-			get: () => state.active && !state.paused,
-		},
-		destroyed: {
-			enumerable: true,
-			value: false,
-		},
-		paused: {
-			enumerable: true,
-			get: () => state.paused,
-		},
-		trace: {
-			enumerable: true,
-			get: () => ((globalThis._oscarpalmer_timer_debug ?? false) ? state.trace : undefined),
+) {
+	Object.defineProperty(this, SYMBOL, {
+		value: {
+			...state,
+			name,
+			options,
+			active: false,
+			destroyed: false,
+			elapsed: 0,
+			frame: undefined,
+			index: 0,
+			paused: false,
+			timer: undefined as never,
+			total: 0,
 		},
 	});
 
-	state.timer = Object.freeze(instance) as Timer;
-
 	if (start) {
-		state.timer.start();
+		startTimer.call(this);
 	}
-
-	return state.timer;
 }
+
+Object.defineProperties(Timer.prototype, {
+	active: {
+		enumerable: true,
+		get() {
+			return isActiveTimer.call(this);
+		},
+	},
+	continue: {
+		value: continueTimer,
+	},
+	pause: {
+		value: pauseTimer,
+	},
+	paused: {
+		enumerable: true,
+		get() {
+			return isPausedTimer.call(this);
+		},
+	},
+	restart: {
+		value: restartTimer,
+	},
+	start: {
+		value: startTimer,
+	},
+	stop: {
+		value: stopTimer,
+	},
+	trace: {
+		get() {
+			return getTimerTrace.call(this);
+		},
+	},
+});
+
+// #endregion
+
+// #region Functions
+
+function continueTimer(this: InternalTimer): Timer {
+	return work(WORK_CONTINUE, this[SYMBOL]);
+}
+
+export function createTimer(
+	name: TimerName,
+	state: Pick<TimerState, 'callback' | 'trace'>,
+	options: TimerOptions,
+	start: boolean,
+): Timer {
+	// @ts-expect-error All good, no worries :-)
+	return new Timer(name, state, options, start);
+}
+
+function getTimerTrace(this: InternalTimer): string | undefined {
+	return (globalThis._oscarpalmer_timer_debug ?? false) ? this[SYMBOL].trace : undefined;
+}
+
+function isActiveTimer(this: InternalTimer): boolean {
+	return this[SYMBOL].active && !this[SYMBOL].paused;
+}
+
+function isPausedTimer(this: InternalTimer): boolean {
+	return this[SYMBOL].paused;
+}
+
+function pauseTimer(this: InternalTimer): Timer {
+	return work(WORK_PAUSE, this[SYMBOL]);
+}
+
+function restartTimer(this: InternalTimer): Timer {
+	return work(WORK_RESTART, this[SYMBOL]);
+}
+
+function startTimer(this: InternalTimer): Timer {
+	return work(WORK_START, this[SYMBOL]);
+}
+
+function stopTimer(this: InternalTimer): Timer {
+	return work(WORK_STOP, this[SYMBOL]);
+}
+
+// #endregion

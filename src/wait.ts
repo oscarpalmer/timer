@@ -4,6 +4,8 @@ import './global';
 import {type Timer, TimerTrace} from './models';
 import {createTimer} from './timer';
 
+// #region Functions
+
 /**
  * Create a waiting timer
  *
@@ -28,3 +30,5 @@ export function wait(callback: () => void, time?: number): Timer {
 		true,
 	);
 }
+
+// #endregion

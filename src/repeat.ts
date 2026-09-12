@@ -4,6 +4,8 @@ import './global';
 import {type RepeatOptions, type Timer, TimerTrace} from './models';
 import {createTimer} from './timer';
 
+// #region Functions
+
 /**
  * Create a repeating timer
  *
@@ -28,3 +30,5 @@ export function repeat(callback: (index: number) => void, options?: Partial<Repe
 		true,
 	);
 }
+
+// #endregion

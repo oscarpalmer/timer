@@ -1,5 +1,7 @@
 import type {TimerName, TimerStates, WorkHandlerType} from './models';
 
+// #region Variables
+
 /**
  * Buffer value to use when evaluating if a specific time is within a certain range
  */
@@ -19,6 +21,8 @@ export const STATES: TimerStates = {
 	hidden: new Set(),
 };
 
+export const SYMBOL = Symbol('timer');
+
 export const TYPE_REPEAT: TimerName = 'repeat';
 
 export const TYPE_WAIT: TimerName = 'wait';
@@ -34,3 +38,5 @@ export const WORK_RESTART: WorkHandlerType = 'restart';
 export const WORK_START: WorkHandlerType = 'start';
 
 export const WORK_STOP: WorkHandlerType = 'stop';
+
+// #endregion

@@ -7,13 +7,15 @@ import {
 	WORK_START,
 	WORK_STOP,
 } from './constants';
-import {updateStates} from './misc';
+import {startTimer, stopTimer, updateStates} from './misc';
 import type {Timer, TimerState, WorkHandlerType} from './models';
+
+// #region Functions
 
 function finish(state: TimerState, success: boolean): void {
 	updateStates(state);
 
-	cancelAnimationFrame(state.frame as never);
+	stopTimer(state.frame as never);
 
 	state.active = false;
 	state.elapsed = 0;
@@ -34,13 +36,15 @@ function ignore(type: WorkHandlerType, state: TimerState): boolean {
 	return state.active && (type === WORK_CONTINUE || type === WORK_START);
 }
 
-function run(state: TimerState): (now: DOMHighResTimeStamp) => void {
-	let last: DOMHighResTimeStamp | undefined;
+function run(state: TimerState): () => void {
+	let last: number | undefined;
 
-	return function step(now: DOMHighResTimeStamp): void {
+	return function step(): void {
 		if (!state.active) {
 			return;
 		}
+
+		const now = performance.now();
 
 		last ??= now;
 
@@ -77,7 +81,7 @@ function run(state: TimerState): (now: DOMHighResTimeStamp) => void {
 			}
 		}
 
-		state.frame = requestAnimationFrame(step);
+		state.frame = startTimer(step);
 	};
 }
 
@@ -92,7 +96,7 @@ function setState(type: WorkHandlerType, state: TimerState): void {
 export function stop(state: TimerState): Timer {
 	updateStates(state);
 
-	cancelAnimationFrame(state.frame as never);
+	stopTimer(state.frame as never);
 
 	state.options.onAfter?.(false);
 
@@ -115,7 +119,7 @@ export function work(type: WorkHandlerType, state: TimerState, hide?: boolean): 
 	}
 
 	if (type === WORK_PAUSE || type === WORK_RESTART) {
-		cancelAnimationFrame(state.frame as never);
+		stopTimer(state.frame as never);
 
 		state.frame = undefined;
 	}
@@ -131,7 +135,9 @@ export function work(type: WorkHandlerType, state: TimerState, hide?: boolean): 
 
 	const runner = run(state);
 
-	state.frame = requestAnimationFrame(runner);
+	state.frame = startTimer(runner);
 
 	return state.timer;
 }
+
+// #endregion

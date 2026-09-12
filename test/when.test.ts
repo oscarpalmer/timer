@@ -44,18 +44,20 @@ test('when: basic', () =>
 
 		when(() => value > 1, {
 			timeout: 250,
-		}).start().catch(() => {
-			expect(stopped).toBe(true);
-			expect(value).toEqual(1);
+		})
+			.start()
+			.catch(() => {
+				expect(stopped).toBe(true);
+				expect(value).toEqual(1);
 
-			try {
-				void what.start();
-			} catch (error) {
-				expect(error).toBeInstanceOf(Error);
-			}
+				try {
+					void what.start();
+				} catch (error) {
+					expect(error).toBeInstanceOf(Error);
+				}
 
-			done();
-		});
+				done();
+			});
 	}));
 
 test('when: pause & continue', () =>
@@ -71,7 +73,6 @@ test('when: pause & continue', () =>
 
 		void what.start(() => {
 			expect(what.active).toBe(false);
-			expect(what.destroyed).toBe(false);
 			expect(what.paused).toBe(false);
 			expect(what.trace).toBeTypeOf('string');
 			expect(finished).toBe(true);
@@ -106,13 +107,13 @@ test('when: timeout', () =>
 			count: 1000,
 			interval: 25,
 			timeout: 25,
-		}).start(
-			() => {
+		})
+			.start(() => {
 				error = false;
-			},
-		).catch(() => {
-			error = true;
-		});
+			})
+			.catch(() => {
+				error = true;
+			});
 
 		setTimeout(() => {
 			expect(error).toBe(true);

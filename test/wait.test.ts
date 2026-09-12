@@ -44,9 +44,6 @@ test('wait', async () =>
 			three.start();
 			three.start();
 
-			five.destroy();
-			five.destroy();
-
 			globalThis._oscarpalmer_timer_debug = true;
 		}, 20);
 
@@ -90,7 +87,6 @@ test('wait', async () =>
 			expect(values.four).toBe(4);
 
 			expect(five.active).toBe(true);
-			expect(five.destroyed).toBe(false);
 			expect(values.five).toBe(0);
 
 			expect(five.trace).toBeTypeOf('string');

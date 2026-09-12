@@ -1,6 +1,6 @@
 {
 	"name": "@oscarpalmer/timer",
-	"version": "0.48.0",
+	"version": "0.49.0",
 	"description": "A better solution for timeout- and interval-based timers.",
 	"keywords": [
 		"requestAnimationFrame",
@@ -60,11 +60,11 @@
 		"watch": "npx vite build --watch"
 	},
 	"dependencies": {
-		"@oscarpalmer/atoms": "^0.199"
+		"@oscarpalmer/atoms": "^0.203"
 	},
 	"devDependencies": {
-		"@oxlint/plugins": "^1.81",
-		"@types/node": "^26.4",
+		"@oxlint/plugins": "^1.82",
+		"@types/node": "^26.5",
 		"@vitest/coverage-istanbul": "^4.1",
 		"jsdom": "^30",
 		"tsdown": "^0.23",

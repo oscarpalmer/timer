@@ -1,3 +1,5 @@
+// #region Types
+
 /**
  * Options for a repeating timer
  */
@@ -32,7 +34,7 @@ export type Timer = {
 
 	/**
 	 * Is the timer destroyed?
-	 * 
+	 *
 	 * @deprecated Timers take care of their own cleanup; this always returns `false`
 	 */
 	get destroyed(): boolean;
@@ -54,7 +56,7 @@ export type Timer = {
 
 	/**
 	 * Destroy the timer
-	 * 
+	 *
 	 * @deprecated Timers take care of their own cleanup
 	 */
 	destroy(): void;
@@ -133,7 +135,7 @@ export type When = {
 
 	/**
 	 * Is the timer destroyed?
-	 * 
+	 *
 	 * @deprecated Timers take care of their own cleanup; this always returns `false`
 	 */
 	get destroyed(): boolean;
@@ -155,7 +157,7 @@ export type When = {
 
 	/**
 	 * Destroys the timer _(and stops it,if it was running)_
-	 * 
+	 *
 	 * @deprecated Timers take care of their own cleanup
 	 */
 	destroy(): void;
@@ -198,6 +200,7 @@ export type WhenOptions = {
 };
 
 export type WhenState = {
+	name: TimerName;
 	promise: Promise<void>;
 	rejecter?: () => void;
 	resolver?: () => void;
@@ -219,3 +222,5 @@ export type WorkHandlerTimer = {
 };
 
 export type WorkHandlerType = 'continue' | 'pause' | 'restart' | 'start' | 'stop';
+
+// #endregion

@@ -1,7 +1,13 @@
-import {noop} from '@oscarpalmer/atoms/function';
-import {MESSAGE_STARTED, TYPE_WHEN, WORK_CONTINUE, WORK_PAUSE, WORK_STOP} from './constants';
-import {getValidNumber, getValidTimeout} from './misc';
+import {
+	MESSAGE_STARTED,
+	SYMBOL,
+	TYPE_WHEN,
+	WORK_CONTINUE,
+	WORK_PAUSE,
+	WORK_STOP,
+} from './constants';
 import './global';
+import {getValidNumber, getValidTimeout} from './misc';
 import {
 	TimerTrace,
 	type When,
@@ -10,6 +16,110 @@ import {
 	type WorkHandlerType,
 } from './models';
 import {createTimer} from './timer';
+
+// #region Types
+
+type InternalWhen = {
+	[SYMBOL]: WhenState;
+} & When;
+
+// #endregion
+
+// #region Instances
+
+function When(this: any, condition: () => boolean, options: WhenOptions) {
+	const state: WhenState = {
+		name: TYPE_WHEN,
+		promise: undefined as never,
+		result: false,
+		started: false,
+		timer: undefined as never,
+	};
+
+	Object.defineProperty(this, SYMBOL, {
+		value: state,
+	});
+
+	state.promise = new Promise<void>((resolve, reject) => {
+		state.resolver = resolve;
+		state.rejecter = reject;
+	});
+
+	state.timer = createTimer(
+		TYPE_WHEN,
+		{
+			callback: () => onCallback(condition, state),
+			trace: new TimerTrace().stack,
+		},
+		{
+			...options,
+			onAfter: () => onAfter(state),
+			onError: () => state.rejecter?.(),
+		},
+		false,
+	);
+}
+
+Object.defineProperties(When.prototype, {
+	active: {
+		get() {
+			return isActiveWhen.call(this);
+		},
+	},
+	continue: {
+		value: continueWhen,
+	},
+	pause: {
+		value: pauseWhen,
+	},
+	paused: {
+		get() {
+			return isPausedWhen.call(this);
+		},
+	},
+	start: {
+		value: startWhen,
+	},
+	stop: {
+		value: stopWhen,
+	},
+	trace: {
+		get() {
+			return getWhenTrace.call(this);
+		},
+	},
+});
+
+// #endregion
+
+// #region Functions
+
+function continueWhen(this: InternalWhen): When {
+	return onWhen(WORK_CONTINUE, this, this[SYMBOL]);
+}
+
+function getWhenOptions(input: unknown): WhenOptions {
+	const options =
+		typeof input === 'object' && input !== null ? (input as Partial<WhenOptions>) : {};
+
+	return {
+		count: getValidNumber(options?.count),
+		interval: getValidNumber(options?.interval),
+		timeout: getValidTimeout(options?.timeout),
+	};
+}
+
+function getWhenTrace(this: InternalWhen): string | undefined {
+	return (globalThis._oscarpalmer_timer_debug ?? false) ? this[SYMBOL].timer?.trace : undefined;
+}
+
+function isActiveWhen(this: InternalWhen): boolean {
+	return this[SYMBOL].timer.active;
+}
+
+function isPausedWhen(this: InternalWhen): boolean {
+	return this[SYMBOL].timer.paused;
+}
 
 function onAfter(state: WhenState): void {
 	if (state.result) {
@@ -37,7 +147,13 @@ function onWhen(type: WorkHandlerType, instance: When, state: WhenState): When {
 	return instance;
 }
 
-function startWhen(state: WhenState, resolve?: (() => void) | null): Promise<void> {
+function pauseWhen(this: InternalWhen): When {
+	return onWhen(WORK_PAUSE, this, this[SYMBOL]);
+}
+
+function startWhen(this: InternalWhen, resolve?: (() => void) | null): Promise<void> {
+	const state = this[SYMBOL];
+
 	if (state.started) {
 		throw new Error(MESSAGE_STARTED);
 	}
@@ -49,6 +165,10 @@ function startWhen(state: WhenState, resolve?: (() => void) | null): Promise<voi
 	return state.promise.then(resolve);
 }
 
+function stopWhen(this: InternalWhen): When {
+	return onWhen(WORK_STOP, this, this[SYMBOL]);
+}
+
 /**
  * Create a conditional timer
  * @param condition Condition to check
@@ -56,66 +176,8 @@ function startWhen(state: WhenState, resolve?: (() => void) | null): Promise<voi
  * @returns Timer instance
  */
 export function when(condition: () => boolean, options?: Partial<WhenOptions>): When {
-	const state: WhenState = {
-		promise: undefined as never,
-		result: false,
-		started: false,
-		timer: undefined as never,
-	};
-
-	let instance: When;
-
-	state.promise = new Promise<void>((resolve, reject) => {
-		state.resolver = resolve;
-		state.rejecter = reject;
-	});
-
-	state.timer = createTimer(
-		TYPE_WHEN,
-		{
-			callback: () => onCallback(condition, state),
-			trace: new TimerTrace().stack,
-		},
-		{
-			onAfter: () => onAfter(state),
-			onError: () => state.rejecter?.(),
-			count: getValidNumber(options?.count),
-			interval: getValidNumber(options?.interval),
-			timeout: getValidTimeout(options?.timeout),
-		},
-		false,
-	);
-
-	instance = {
-		continue: () => onWhen(WORK_CONTINUE, instance, state),
-		destroy: noop,
-		pause: () => onWhen(WORK_PAUSE, instance, state),
-		start: (resolve: never) => startWhen(state, resolve),
-		stop: () => onWhen(WORK_STOP, instance, state),
-	} as When;
-
-	Object.defineProperties(instance, {
-		$timer: {
-			enumerable: false,
-			value: TYPE_WHEN,
-		},
-		active: {
-			enumerable: true,
-			get: () => state.timer.active,
-		},
-		destroyed: {
-			enumerable: true,
-			value: false,
-		},
-		paused: {
-			enumerable: true,
-			get: () => state.timer.paused,
-		},
-		trace: {
-			enumerable: true,
-			get: () => ((globalThis._oscarpalmer_timer_debug ?? false) ? state.timer?.trace : undefined),
-		},
-	});
-
-	return Object.freeze(instance) as When;
+	// @ts-expect-error All good, no worries :-)
+	return new When(condition, getWhenOptions(options));
 }
+
+// #endregion
