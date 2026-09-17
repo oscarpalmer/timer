@@ -36,9 +36,7 @@ function When(this: any, condition: () => boolean, options: WhenOptions) {
 		timer: undefined as never,
 	};
 
-	Object.defineProperty(this, SYMBOL, {
-		value: state,
-	});
+	this[SYMBOL] = state;
 
 	state.promise = new Promise<void>((resolve, reject) => {
 		state.resolver = resolve;
@@ -60,33 +58,20 @@ function When(this: any, condition: () => boolean, options: WhenOptions) {
 	);
 }
 
+When.prototype.continue = continueWhen;
+When.prototype.pause = pauseWhen;
+When.prototype.start = startWhen;
+When.prototype.stop = stopWhen;
+
 Object.defineProperties(When.prototype, {
 	active: {
-		get() {
-			return isActiveWhen.call(this);
-		},
-	},
-	continue: {
-		value: continueWhen,
-	},
-	pause: {
-		value: pauseWhen,
+		get: getWhenActive,
 	},
 	paused: {
-		get() {
-			return isPausedWhen.call(this);
-		},
-	},
-	start: {
-		value: startWhen,
-	},
-	stop: {
-		value: stopWhen,
+		get: getWhenPaused,
 	},
 	trace: {
-		get() {
-			return getWhenTrace.call(this);
-		},
+		get: getWhenTrace,
 	},
 });
 
@@ -109,16 +94,16 @@ function getWhenOptions(input: unknown): WhenOptions {
 	};
 }
 
-function getWhenTrace(this: InternalWhen): string | undefined {
-	return (globalThis._oscarpalmer_timer_debug ?? false) ? this[SYMBOL].timer?.trace : undefined;
-}
-
-function isActiveWhen(this: InternalWhen): boolean {
+function getWhenActive(this: InternalWhen): boolean {
 	return this[SYMBOL].timer.active;
 }
 
-function isPausedWhen(this: InternalWhen): boolean {
+function getWhenPaused(this: InternalWhen): boolean {
 	return this[SYMBOL].timer.paused;
+}
+
+function getWhenTrace(this: InternalWhen): string | undefined {
+	return (globalThis._oscarpalmer_timer_debug ?? false) ? this[SYMBOL].timer?.trace : undefined;
 }
 
 function onAfter(state: WhenState): void {

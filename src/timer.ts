@@ -19,59 +19,43 @@ function Timer(
 	options: TimerOptions,
 	start: boolean,
 ) {
-	Object.defineProperty(this, SYMBOL, {
-		value: {
-			...state,
-			name,
-			options,
-			active: false,
-			destroyed: false,
-			elapsed: 0,
-			frame: undefined,
-			index: 0,
-			paused: false,
-			timer: undefined as never,
-			total: 0,
-		},
-	});
+	this[SYMBOL] = {
+		...state,
+		name,
+		options,
+		active: false,
+		destroyed: false,
+		elapsed: 0,
+		frame: undefined,
+		index: 0,
+		paused: false,
+		timer: undefined as never,
+		total: 0,
+	};
 
 	if (start) {
 		startTimer.call(this);
 	}
 }
 
+Timer.prototype.continue = continueTimer;
+Timer.prototype.pause = pauseTimer;
+Timer.prototype.restart = restartTimer;
+Timer.prototype.start = startTimer;
+Timer.prototype.stop = stopTimer;
+
 Object.defineProperties(Timer.prototype, {
 	active: {
 		enumerable: true,
-		get() {
-			return isActiveTimer.call(this);
-		},
-	},
-	continue: {
-		value: continueTimer,
-	},
-	pause: {
-		value: pauseTimer,
+		get: getTimerActive,
 	},
 	paused: {
 		enumerable: true,
-		get() {
-			return isPausedTimer.call(this);
-		},
-	},
-	restart: {
-		value: restartTimer,
-	},
-	start: {
-		value: startTimer,
-	},
-	stop: {
-		value: stopTimer,
+		get: getTimerPaused,
 	},
 	trace: {
-		get() {
-			return getTimerTrace.call(this);
-		},
+		enumerable: true,
+		get: getTimerTrace,
 	},
 });
 
@@ -93,16 +77,16 @@ export function createTimer(
 	return new Timer(name, state, options, start);
 }
 
-function getTimerTrace(this: InternalTimer): string | undefined {
-	return (globalThis._oscarpalmer_timer_debug ?? false) ? this[SYMBOL].trace : undefined;
-}
-
-function isActiveTimer(this: InternalTimer): boolean {
+function getTimerActive(this: InternalTimer): boolean {
 	return this[SYMBOL].active && !this[SYMBOL].paused;
 }
 
-function isPausedTimer(this: InternalTimer): boolean {
+function getTimerPaused(this: InternalTimer): boolean {
 	return this[SYMBOL].paused;
+}
+
+function getTimerTrace(this: InternalTimer): string | undefined {
+	return (globalThis._oscarpalmer_timer_debug ?? false) ? this[SYMBOL].trace : undefined;
 }
 
 function pauseTimer(this: InternalTimer): Timer {
