@@ -61,10 +61,11 @@ export function updateStates(state: TimerState, hide?: boolean): void {
 // #region Variables
 
 /* istanbul ignore next */
-export const startTimer =
+export const startTimer: GenericCallback =
 	'requestAnimationFrame' in globalThis ? requestAnimationFrame : setTimeout;
 
 /* istanbul ignore next */
-export const stopTimer = 'cancelAnimationFrame' in globalThis ? cancelAnimationFrame : clearTimeout;
+export const stopTimer: GenericCallback =
+	'cancelAnimationFrame' in globalThis ? cancelAnimationFrame : clearTimeout;
 
 // #endregion

@@ -1,4 +1,4 @@
-import {expect, test} from 'vitest';
+import {expect, test} from 'vite-plus/test';
 import '../src/global';
 import {wait} from '../src/wait';
 

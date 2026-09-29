@@ -1,3 +1,4 @@
+import {attempt} from '@oscarpalmer/atoms/result';
 import {
 	MESSAGE_STARTED,
 	SYMBOL,
@@ -115,13 +116,17 @@ function onAfter(state: WhenState): void {
 }
 
 function onCallback(condition: () => boolean, state: WhenState): void {
-	try {
-		if (condition()) {
-			state.result = true;
+	const result = attempt(condition);
 
-			state.timer.stop();
-		}
-	} catch {
+	let stop = !result.ok;
+
+	if (result.ok && result.value) {
+		stop = true;
+
+		state.result = true;
+	}
+
+	if (stop) {
 		state.timer.stop();
 	}
 }

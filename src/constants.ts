@@ -21,7 +21,7 @@ export const STATES: TimerStates = {
 	hidden: new Set(),
 };
 
-export const SYMBOL = Symbol('timer');
+export const SYMBOL: symbol = Symbol('timer');
 
 export const TYPE_REPEAT: TimerName = 'repeat';
 

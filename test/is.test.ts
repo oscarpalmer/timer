@@ -1,4 +1,4 @@
-import {expect, test} from 'vitest';
+import {expect, test} from 'vite-plus/test';
 import {isRepeated, isTimer, isWaited, isWhen, repeat, wait, when} from '../src';
 
 test('is', () =>
