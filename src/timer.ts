@@ -18,7 +18,7 @@ function Timer(
 	state: Pick<TimerState, 'callback' | 'trace'>,
 	options: TimerOptions,
 	start: boolean,
-) {
+): void {
 	this[SYMBOL] = {
 		...state,
 		name,

@@ -28,7 +28,7 @@ type InternalWhen = {
 
 // #region Instances
 
-function When(this: any, condition: () => boolean, options: WhenOptions) {
+function When(this: any, condition: () => boolean, options: WhenOptions): void {
 	const state: WhenState = {
 		name: TYPE_WHEN,
 		promise: undefined as never,
