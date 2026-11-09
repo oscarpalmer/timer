@@ -1,143 +1,123 @@
-import {expect, test} from 'vite-plus/test';
-import '../src/global';
-import {wait} from '../src/wait';
+import {expect, test, vi} from 'vite-plus/test';
 import {when} from '../src/when';
+import {advanceAsync, after} from './helpers';
 
-test('when: basic', () =>
-	new Promise<void>(done => {
-		let stopped = false;
-		let value = 0;
+const interval = 25;
+const timeout = interval * 2;
 
-		wait(() => {
-			value += 1;
-		}, 125);
+test('when: resolves when the condition becomes true', async () => {
+	let ready = false;
 
-		void when(() => value > 0).start(() => {
-			expect(value).toEqual(1);
-		});
+	const resolved = vi.fn();
+	const timer = when(() => ready, {interval});
 
-		const what = when(
-			() => {
-				expect(what.active).toBe(true);
-				expect(what.trace).toBeUndefined();
+	const promise = timer.start(resolved);
 
-				return value > 1;
-			},
-			{
-				interval: 125,
-			},
-		);
+	await advanceAsync(after(interval * 4));
 
-		wait(() => {
-			what.stop();
-		}, 175);
+	expect(resolved).not.toHaveBeenCalled();
+	expect(timer.active).toBe(true);
 
-		what.start().catch(() => {
-			stopped = true;
-		});
+	ready = true;
 
-		try {
-			void what.start();
-		} catch (error) {
-			expect(error).toBeInstanceOf(Error);
-		}
+	await advanceAsync(after(interval));
+	await promise;
 
-		when(() => value > 1, {
-			timeout: 250,
-		})
-			.start()
-			.catch(() => {
-				expect(stopped).toBe(true);
-				expect(value).toEqual(1);
+	expect(resolved).toHaveBeenCalledTimes(1);
+	expect(timer.active).toBe(false);
+});
 
-				try {
-					void what.start();
-				} catch (error) {
-					expect(error).toBeInstanceOf(Error);
-				}
+test('when: start can only be called once', async () => {
+	const timer = when(() => true);
 
-				done();
-			});
-	}));
+	const promise = timer.start();
 
-test('when: pause & continue', () =>
-	new Promise<void>(done => {
-		globalThis._oscarpalmer_timer_debug = true;
+	expect(() => timer.start()).toThrow('Timer has already been started');
 
-		let finished = false;
+	await advanceAsync(after(interval * 4));
+	await promise;
 
-		const what = when(() => finished, {
-			count: 100,
-			interval: 25,
-		});
+	expect(() => timer.start()).toThrow('Timer has already been started');
+});
 
-		void what.start(() => {
-			expect(what.active).toBe(false);
-			expect(what.paused).toBe(false);
-			expect(what.trace).toBeTypeOf('string');
-			expect(finished).toBe(true);
+test('when: stop rejects the promise', async () => {
+	const timer = when(() => false, {interval});
 
-			done();
-		});
+	const promise = timer.start();
+	const assertion = expect(promise).rejects.toBeUndefined();
 
-		wait(() => {
-			expect(what.active).toBe(true);
-			expect(what.paused).toBe(false);
-			expect(what.trace).toBeTypeOf('string');
+	await advanceAsync(after(interval * 4));
 
-			what.pause();
+	timer.stop();
 
-			wait(() => {
-				expect(what.paused).toBe(true);
+	await assertion;
 
-				what.continue();
+	expect(timer.active).toBe(false);
+});
 
-				wait(() => {
-					finished = true;
-				}, 125);
-			}, 250);
-		}, 125);
-	}));
+test('when: timeout rejects the promise', async () => {
+	const timer = when(() => false, {interval, timeout});
 
-test('when: timeout', () =>
-	new Promise<void>(done => {
-		let error: boolean | undefined;
+	const assertion = expect(timer.start()).rejects.toBeUndefined();
 
-		when(() => false, {
-			count: 1000,
-			interval: 25,
-			timeout: 25,
-		})
-			.start(() => {
-				error = false;
-			})
-			.catch(() => {
-				error = true;
-			});
+	await advanceAsync(after(timeout));
+	await assertion;
 
-		setTimeout(() => {
-			expect(error).toBe(true);
+	expect(timer.active).toBe(false);
+});
 
-			done();
-		}, 100);
-	}));
+test('when: a throwing condition rejects the promise', async () => {
+	const timer = when(() => {
+		throw new Error('nope');
+	});
 
-test('failing condition', () =>
-	new Promise<void>(done => {
-		let error: boolean | undefined;
+	const assertion = expect(timer.start()).rejects.toBeUndefined();
 
-		void when(() => {
-			throw new Error();
-		})
-			.start(() => {
-				error = false;
-			})
-			.catch(() => {
-				error = true;
-			})
-			.then(() => {
-				expect(error).toBe(true);
+	await advanceAsync(after(interval * 4));
+	await assertion;
+});
 
-				done();
-			});
-	}));
+test('when: pause and continue', async () => {
+	let ready = false;
+
+	const timer = when(() => ready, {interval});
+	const promise = timer.start();
+
+	await advanceAsync(after(interval * 4));
+
+	timer.pause();
+
+	expect(timer.active).toBe(false);
+	expect(timer.paused).toBe(true);
+
+	ready = true;
+
+	await advanceAsync(after(interval * 20));
+
+	expect(timer.paused).toBe(true);
+
+	timer.continue();
+
+	expect(timer.active).toBe(true);
+	expect(timer.paused).toBe(false);
+
+	await advanceAsync(after(interval * 4));
+	await promise;
+
+	expect(timer.active).toBe(false);
+});
+
+test('when: trace is only available when debugging', async () => {
+	const timer = when(() => true);
+
+	expect(timer.trace).toBeUndefined();
+
+	globalThis._oscarpalmer_timer_debug = true;
+
+	expect(timer.trace).toBeTypeOf('string');
+
+	const promise = timer.start();
+
+	await advanceAsync(after(interval * 4));
+	await promise;
+});

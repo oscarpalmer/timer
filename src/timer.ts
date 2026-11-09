@@ -1,4 +1,5 @@
 import {SYMBOL, WORK_CONTINUE, WORK_PAUSE, WORK_RESTART, WORK_START, WORK_STOP} from './constants';
+import {updatePrototype} from './misc';
 import type {Timer, TimerName, TimerOptions, TimerState} from './models';
 import {work} from './work';
 
@@ -13,7 +14,7 @@ type InternalTimer = {
 // #region Instances
 
 function Timer(
-	this: any,
+	this: InternalTimer,
 	name: TimerName,
 	state: Pick<TimerState, 'callback' | 'trace'>,
 	options: TimerOptions,
@@ -24,12 +25,11 @@ function Timer(
 		name,
 		options,
 		active: false,
-		destroyed: false,
 		elapsed: 0,
 		frame: undefined,
 		index: 0,
 		paused: false,
-		timer: undefined as never,
+		timer: this,
 		total: 0,
 	};
 
@@ -38,25 +38,12 @@ function Timer(
 	}
 }
 
-Timer.prototype.continue = continueTimer;
-Timer.prototype.pause = pauseTimer;
-Timer.prototype.restart = restartTimer;
-Timer.prototype.start = startTimer;
-Timer.prototype.stop = stopTimer;
-
-Object.defineProperties(Timer.prototype, {
-	active: {
-		enumerable: true,
-		get: getTimerActive,
-	},
-	paused: {
-		enumerable: true,
-		get: getTimerPaused,
-	},
-	trace: {
-		enumerable: true,
-		get: getTimerTrace,
-	},
+updatePrototype(Timer, {
+	continue: continueTimer,
+	pause: pauseTimer,
+	restart: restartTimer,
+	start: startTimer,
+	stop: stopTimer,
 });
 
 // #endregion
@@ -75,18 +62,6 @@ export function createTimer(
 ): Timer {
 	// @ts-expect-error All good, no worries :-)
 	return new Timer(name, state, options, start);
-}
-
-function getTimerActive(this: InternalTimer): boolean {
-	return this[SYMBOL].active && !this[SYMBOL].paused;
-}
-
-function getTimerPaused(this: InternalTimer): boolean {
-	return this[SYMBOL].paused;
-}
-
-function getTimerTrace(this: InternalTimer): string | undefined {
-	return (globalThis._oscarpalmer_timer_debug ?? false) ? this[SYMBOL].trace : undefined;
 }
 
 function pauseTimer(this: InternalTimer): Timer {

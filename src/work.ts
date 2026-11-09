@@ -29,6 +29,10 @@ function finish(state: TimerState, success: boolean): void {
 }
 
 function ignore(type: WorkHandlerType, state: TimerState): boolean {
+	if (type === WORK_STOP) {
+		return !state.active;
+	}
+
 	if (state.paused) {
 		return type === WORK_PAUSE || type === WORK_START;
 	}
@@ -101,8 +105,11 @@ export function stop(state: TimerState): Timer {
 	state.options.onAfter?.(false);
 
 	state.active = false;
+	state.elapsed = 0;
+	state.index = 0;
 	state.frame = undefined;
 	state.paused = false;
+	state.total = 0;
 
 	return state.timer;
 }

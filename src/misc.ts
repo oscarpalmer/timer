@@ -1,13 +1,48 @@
 import {noop} from '@oscarpalmer/atoms/function';
 import type {GenericCallback} from '@oscarpalmer/atoms/models';
-import {DEFAULT_TIMEOUT, STATES, WORK_CONTINUE, WORK_PAUSE} from './constants';
-import type {TimerState} from './models';
-import {work} from './work';
+import {DEFAULT_TIMEOUT, PAUSED, STATES, SYMBOL} from './constants';
+import type {TimerState, WhenState} from './models';
+
+// #region Types
+
+type InternalTimer = {
+	[SYMBOL]: TimerState;
+};
+
+type InternalWhen = {
+	[SYMBOL]: WhenState;
+};
+
+// #endregion
 
 // #region Functions
 
+function getActive(this: InternalTimer | InternalWhen): boolean {
+	const state = this[SYMBOL];
+
+	return PAUSED in state
+		? state.active && !state.paused
+		: state.timer.active && !state.timer.paused;
+}
+
 export function getCallback(value: unknown): GenericCallback {
 	return typeof value === 'function' ? (value as GenericCallback) : noop;
+}
+
+function getPaused(this: InternalTimer | InternalWhen): boolean {
+	const state = this[SYMBOL];
+
+	return PAUSED in state ? state.paused : state.timer.paused;
+}
+
+function getTrace(this: InternalTimer | InternalWhen): string | undefined {
+	const state = this[SYMBOL];
+
+	if (globalThis._oscarpalmer_timer_debug ?? false) {
+		return PAUSED in state ? state.trace : state.timer.trace;
+	}
+
+	return undefined;
 }
 
 export function getValidNumber(value: unknown, defaultValue?: number): number {
@@ -20,33 +55,41 @@ export function getValidTimeout(value: unknown): number {
 	return typeof value === 'number' && value > 0 ? value : DEFAULT_TIMEOUT;
 }
 
-/* istanbul ignore next */
-export function onVisibilityChange(): void {
-	const from = document.hidden ? STATES.active : STATES.hidden;
-	const type = document.hidden ? WORK_PAUSE : WORK_CONTINUE;
+export function updatePrototype(
+	owner: GenericCallback,
+	methods: Record<string, GenericCallback>,
+): void {
+	const keys = Object.keys(methods);
 
-	for (const stored of from) {
-		const state = stored instanceof WeakRef ? stored.deref() : stored;
-
-		if (state == null) {
-			from.delete(stored as never);
-		} else {
-			work(type, state, true);
-		}
+	for (const key of keys) {
+		owner.prototype[key] = methods[key];
 	}
+
+	Object.defineProperties(owner.prototype, {
+		active: {
+			enumerable: true,
+			get: getActive,
+		},
+		paused: {
+			enumerable: true,
+			get: getPaused,
+		},
+		trace: {
+			enumerable: true,
+			get: getTrace,
+		},
+	});
 }
 
 export function updateStates(state: TimerState, hide?: boolean): void {
 	STATES.active.delete(state);
 
-	/* istanbul ignore next */
 	STATES.hidden.delete(state.reference!);
 
 	if (hide == null) {
 		return;
 	}
 
-	/* istanbul ignore if */
 	if (hide) {
 		state.reference ??= new WeakRef(state);
 

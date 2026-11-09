@@ -16,12 +16,14 @@ export const GLOBAL_NAME = '_oscarpalmer_timers';
  */
 export const MESSAGE_STARTED = 'Timer has already been started';
 
+export const PAUSED = 'paused';
+
 export const STATES: TimerStates = {
 	active: new Set(),
 	hidden: new Set(),
 };
 
-export const SYMBOL: symbol = Symbol('timer');
+export const SYMBOL: unique symbol = Symbol('timer');
 
 export const TYPE_REPEAT: TimerName = 'repeat';
 

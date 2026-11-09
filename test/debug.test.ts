@@ -1,40 +1,31 @@
 import {expect, test} from 'vite-plus/test';
 import {wait} from '../src';
+import {advance, after} from './helpers';
 
-test('debugging', () =>
-	new Promise<void>(done => {
-		const timed = wait(() => {
-			// ?
-		}, 1000);
+const time = 1000;
 
-		wait(() => {
-			expect(
-				Array.isArray(globalThis._oscarpalmer_timers) &&
-					globalThis._oscarpalmer_timers.length === 0,
-			).toBe(true);
+test('debug: timers are only listed and traced when debugging is enabled', () => {
+	const timer = wait(() => {}, time);
 
-			expect(timed.trace).toBeUndefined();
+	wait(() => {}, time);
 
-			globalThis._oscarpalmer_timer_debug = true;
-		}, 25);
+	expect(globalThis._oscarpalmer_timers).toEqual([]);
+	expect(timer.trace).toBeUndefined();
 
-		wait(() => {
-			expect(
-				Array.isArray(globalThis._oscarpalmer_timers) &&
-					globalThis._oscarpalmer_timers.length === 2,
-			).toBe(true);
+	globalThis._oscarpalmer_timer_debug = true;
 
-			expect(timed.trace).not.toBeUndefined();
+	expect(globalThis._oscarpalmer_timers).toHaveLength(2);
+	expect(globalThis._oscarpalmer_timers).toContain(timer);
+	expect(timer.trace).toBeTypeOf('string');
 
-			globalThis._oscarpalmer_timer_debug = false;
-		}, 50);
+	timer.stop();
 
-		wait(() => {
-			expect(
-				Array.isArray(globalThis._oscarpalmer_timers) &&
-					globalThis._oscarpalmer_timers.length === 0,
-			).toBe(true);
+	expect(globalThis._oscarpalmer_timers).toHaveLength(1);
 
-			done();
-		}, 75);
-	}));
+	globalThis._oscarpalmer_timer_debug = false;
+
+	expect(globalThis._oscarpalmer_timers).toEqual([]);
+	expect(timer.trace).toBeUndefined();
+
+	advance(after(time));
+});

@@ -33,13 +33,6 @@ export type Timer = {
 	get active(): boolean;
 
 	/**
-	 * Is the timer destroyed?
-	 *
-	 * @deprecated Timers take care of their own cleanup; this always returns `false`
-	 */
-	get destroyed(): boolean;
-
-	/**
 	 * Is the timer paused?
 	 */
 	get paused(): boolean;
@@ -53,13 +46,6 @@ export type Timer = {
 	 * Continue running the timer _(if it's paused)_
 	 */
 	continue(): Timer;
-
-	/**
-	 * Destroy the timer
-	 *
-	 * @deprecated Timers take care of their own cleanup
-	 */
-	destroy(): void;
 
 	/**
 	 * Pause the timer _(if it's running)_
@@ -95,7 +81,6 @@ export type TimerOptions = {
 export type TimerState = {
 	active: boolean;
 	callback: () => void;
-	destroyed: boolean;
 	elapsed: number;
 	frame?: number;
 	index: number;
@@ -134,13 +119,6 @@ export type When = {
 	get active(): boolean;
 
 	/**
-	 * Is the timer destroyed?
-	 *
-	 * @deprecated Timers take care of their own cleanup; this always returns `false`
-	 */
-	get destroyed(): boolean;
-
-	/**
 	 * Is the timer paused?
 	 */
 	get paused(): boolean;
@@ -154,13 +132,6 @@ export type When = {
 	 * Continues the timer _(if it was paused)_
 	 */
 	continue(): When;
-
-	/**
-	 * Destroys the timer _(and stops it,if it was running)_
-	 *
-	 * @deprecated Timers take care of their own cleanup
-	 */
-	destroy(): void;
 
 	/**
 	 * Pauses the timer _(if it was running)_

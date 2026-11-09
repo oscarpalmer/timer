@@ -8,7 +8,7 @@ import {
 	WORK_STOP,
 } from './constants';
 import './global';
-import {getValidNumber, getValidTimeout} from './misc';
+import {getValidNumber, getValidTimeout, updatePrototype} from './misc';
 import {
 	TimerTrace,
 	type When,
@@ -28,7 +28,7 @@ type InternalWhen = {
 
 // #region Instances
 
-function When(this: any, condition: () => boolean, options: WhenOptions): void {
+function When(this: InternalWhen, condition: () => boolean, options: WhenOptions): void {
 	const state: WhenState = {
 		name: TYPE_WHEN,
 		promise: undefined as never,
@@ -59,21 +59,11 @@ function When(this: any, condition: () => boolean, options: WhenOptions): void {
 	);
 }
 
-When.prototype.continue = continueWhen;
-When.prototype.pause = pauseWhen;
-When.prototype.start = startWhen;
-When.prototype.stop = stopWhen;
-
-Object.defineProperties(When.prototype, {
-	active: {
-		get: getWhenActive,
-	},
-	paused: {
-		get: getWhenPaused,
-	},
-	trace: {
-		get: getWhenTrace,
-	},
+updatePrototype(When, {
+	continue: continueWhen,
+	pause: pauseWhen,
+	start: startWhen,
+	stop: stopWhen,
 });
 
 // #endregion
@@ -93,18 +83,6 @@ function getWhenOptions(input: unknown): WhenOptions {
 		interval: getValidNumber(options?.interval),
 		timeout: getValidTimeout(options?.timeout),
 	};
-}
-
-function getWhenActive(this: InternalWhen): boolean {
-	return this[SYMBOL].timer.active;
-}
-
-function getWhenPaused(this: InternalWhen): boolean {
-	return this[SYMBOL].timer.paused;
-}
-
-function getWhenTrace(this: InternalWhen): string | undefined {
-	return (globalThis._oscarpalmer_timer_debug ?? false) ? this[SYMBOL].timer?.trace : undefined;
 }
 
 function onAfter(state: WhenState): void {

@@ -10,7 +10,7 @@ export default defineConfig({
 		useTabs: true,
 	},
 	lint: {
-		jsPlugins: ['./node_modules/@oscarpalmer/atoms/plugin/index.js'],
+		jsPlugins: ['@oscarpalmer/atoms/eslint'],
 		rules: {
 			...rules,
 		},
@@ -18,9 +18,6 @@ export default defineConfig({
 	logLevel: 'silent',
 	pack: {
 		deps: {
-			// tsdown <0.23 compatibility: resolve external dependency subpaths.
-			// Remove to preserve subpath imports as written (the new default).
-			// https://tsdown.dev/options/dependencies#deps-resolvedepsubpath
 			resolveDepSubpath: true,
 		},
 		dts: {
@@ -35,6 +32,7 @@ export default defineConfig({
 			provider: 'istanbul',
 		},
 		environment: 'jsdom',
+		setupFiles: ['./test/setup.ts'],
 		watch: false,
 	},
 });

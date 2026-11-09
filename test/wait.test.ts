@@ -1,113 +1,166 @@
-import {expect, test} from 'vite-plus/test';
-import '../src/global';
+import {expect, test, vi} from 'vite-plus/test';
 import {wait} from '../src/wait';
+import {advance, after, before} from './helpers';
 
-test('wait', async () =>
-	new Promise<void>(done => {
-		const values = {
-			four: 0,
-			five: 0,
-			one: 0,
-			three: 0,
-			two: 0,
-		};
+const time = 100;
 
-		const one = wait(() => {
-			values.one += 1;
-		}, 60);
+test('wait: runs callback once after the given time', () => {
+	const callback = vi.fn();
+	const timer = wait(callback, time);
 
-		const two = wait(() => {
-			values.two += 2;
-		}, 60);
+	expect(timer.active).toBe(true);
 
-		const three = wait(() => {
-			values.three += 3;
-		}, 60);
+	advance(before(time));
 
-		const four = wait(() => {
-			values.four += 4;
-		}, 60);
+	expect(callback).not.toHaveBeenCalled();
+	expect(timer.active).toBe(true);
 
-		const five = wait(() => {
-			values.five += 5;
-		}, 500);
+	advance(after(time));
 
-		setTimeout(() => {
-			expect(one.active).toBe(true);
-			expect(globalThis._oscarpalmer_timer_debug).toBeOneOf([false, undefined]);
-			expect(globalThis._oscarpalmer_timers?.length).toBeOneOf([0, undefined]);
-			expect(one.trace).toBeUndefined();
+	expect(callback).toHaveBeenCalledTimes(1);
+	expect(timer.active).toBe(false);
 
-			two.stop();
-			two.stop();
+	advance(after(time));
 
-			three.start();
-			three.start();
+	expect(callback).toHaveBeenCalledTimes(1);
+});
 
-			globalThis._oscarpalmer_timer_debug = true;
-		}, 20);
+test('wait: methods return the timer for chaining', () => {
+	const timer = wait(() => {}, time);
 
-		setTimeout(() => {
-			expect(globalThis._oscarpalmer_timer_debug).toBe(true);
-			expect(globalThis._oscarpalmer_timers?.length).toBe(4);
-			expect(one.trace).not.toBeUndefined();
+	expect(timer.pause()).toBe(timer);
+	expect(timer.continue()).toBe(timer);
+	expect(timer.restart()).toBe(timer);
+	expect(timer.stop()).toBe(timer);
+	expect(timer.start()).toBe(timer);
+});
 
-			three.restart();
-			three.restart();
+test('wait: runs on the next frame without a time', () => {
+	const callback = vi.fn();
 
-			four.pause();
-			four.pause();
+	wait(callback);
 
-			five.start();
-			five.start();
-		}, 40);
+	advance(after(0));
 
-		setTimeout(() => {
-			expect(four.paused).toBe(true);
+	expect(callback).toHaveBeenCalledTimes(1);
+});
 
-			four.continue();
-			four.continue();
-		}, 60);
+test('wait: ignores callbacks that are not functions', () => {
+	const timer = wait(undefined as never, time);
 
-		setTimeout(() => {
-			expect(globalThis._oscarpalmer_timer_debug).toBe(true);
-			expect(globalThis._oscarpalmer_timers?.length).toBe(1);
+	advance(after(time));
 
-			expect(one.active).toBe(false);
-			expect(values.one).toBe(1);
+	expect(timer.active).toBe(false);
+});
 
-			expect(two.active).toBe(false);
-			expect(values.two).toBe(0);
+test('wait: stop prevents the callback, and is safe to repeat', () => {
+	const callback = vi.fn();
+	const timer = wait(callback, time);
 
-			expect(three.active).toBe(false);
-			expect(values.three).toBe(3);
+	timer.stop();
+	timer.stop();
 
-			expect(four.active).toBe(false);
-			expect(four.paused).toBe(false);
-			expect(values.four).toBe(4);
+	advance(after(time));
 
-			expect(five.active).toBe(true);
-			expect(values.five).toBe(0);
+	expect(callback).not.toHaveBeenCalled();
+	expect(timer.active).toBe(false);
+});
 
-			expect(five.trace).toBeTypeOf('string');
+test('wait: start is ignored while active, and runs again after finishing', () => {
+	const callback = vi.fn();
+	const timer = wait(callback, time);
 
-			done();
-		}, 450);
-	}));
+	timer.start();
+	timer.start();
 
-test(
-	'long',
-	async () =>
-		new Promise<void>(done => {
-			const now = performance.now();
+	advance(after(time));
 
-			wait(() => {
-				const elapsed = performance.now() - now;
+	expect(callback).toHaveBeenCalledTimes(1);
 
-				expect(elapsed >= 1480 && elapsed <= 1520).toBe(true);
+	timer.start();
 
-				done();
-			}, 1500);
-		}),
-	2000,
-);
+	advance(after(time));
+
+	expect(callback).toHaveBeenCalledTimes(2);
+});
+
+test('wait: pause and continue keep the elapsed time', () => {
+	const callback = vi.fn();
+	const timer = wait(callback, time);
+
+	// Not enough to finish, but enough that a full restart would be noticeable
+	advance(time / 2);
+
+	timer.pause();
+	timer.pause();
+
+	expect(timer.active).toBe(false);
+	expect(timer.paused).toBe(true);
+
+	advance(after(time) * 10);
+
+	expect(callback).not.toHaveBeenCalled();
+
+	timer.continue();
+	timer.continue();
+
+	expect(timer.active).toBe(true);
+	expect(timer.paused).toBe(false);
+
+	// Only the remaining half
+	advance(before(time / 2));
+
+	expect(callback).not.toHaveBeenCalled();
+
+	advance(after(time / 2));
+
+	expect(callback).toHaveBeenCalledTimes(1);
+});
+
+test('wait: a paused timer can be stopped', () => {
+	const callback = vi.fn();
+	const timer = wait(callback, time);
+
+	timer.pause();
+	timer.stop();
+
+	expect(timer.paused).toBe(false);
+
+	advance(after(time));
+
+	expect(callback).not.toHaveBeenCalled();
+});
+
+test('wait: restart begins the time again', () => {
+	const callback = vi.fn();
+	const timer = wait(callback, time);
+
+	advance(time / 2);
+
+	timer.restart();
+	timer.restart();
+
+	// The time before the restart must not count
+	advance(before(time));
+
+	expect(callback).not.toHaveBeenCalled();
+
+	advance(after(time));
+
+	expect(callback).toHaveBeenCalledTimes(1);
+});
+
+test('wait: long timers finish at the right time', () => {
+	const callback = vi.fn();
+	const long = time * 15;
+
+	wait(callback, long);
+
+	advance(before(long));
+
+	expect(callback).not.toHaveBeenCalled();
+
+	advance(after(long));
+
+	expect(callback).toHaveBeenCalledTimes(1);
+});
