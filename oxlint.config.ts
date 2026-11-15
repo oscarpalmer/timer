@@ -1,5 +1,5 @@
 import {defineConfig} from 'oxlint';
-import rules from './node_modules/@oscarpalmer/atoms/plugin/rules.js';
+import rules from '@oscarpalmer/atoms/eslint/rules';
 
 export default defineConfig({
 	jsPlugins: ['@oscarpalmer/atoms/eslint'],

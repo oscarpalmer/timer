@@ -1,5 +1,5 @@
 import {defineConfig} from 'vite-plus';
-import rules from './node_modules/@oscarpalmer/atoms/plugin/rules.js';
+import rules from '@oscarpalmer/atoms/eslint/rules';
 
 export default defineConfig({
 	base: './',
@@ -17,6 +17,7 @@ export default defineConfig({
 	},
 	logLevel: 'silent',
 	pack: {
+		clean: false,
 		deps: {
 			resolveDepSubpath: true,
 		},
