@@ -1,5 +1,5 @@
+import type {GenericCallback} from '@oscarpalmer/atoms';
 import {noop} from '@oscarpalmer/atoms/function';
-import type {GenericCallback} from '@oscarpalmer/atoms/models';
 import {DEFAULT_TIMEOUT, PAUSED, STATES, SYMBOL} from './constants';
 import type {TimerState, WhenState} from './models';
 
